@@ -86,11 +86,13 @@ extractor. They remain null in the original metadata. Obtain billing evidence
 from the corresponding OpenRouter usage interval before reporting a dollar cost
 or cost per document; unknown cost does not mean free.
 
-## Recommendation for the next experiment
+## Recommendation recorded after the baseline
 
 The observed errors favor a focused contract/prompt and deterministic expiration
 iteration before changing models, adding OCR, or increasing resolution. Explicit
 date and non-credential rules address demonstrated failures; name and wording
 conventions need careful, general instructions rather than document-specific
 answers. Measure the effect using the same scorer and fixtures, with no claimed
-improvement until a new run is available. This recommendation has not been implemented.
+improvement until a new run is available. This was the recommendation at baseline
+review; subsequent v01 and v02 work and measurements are documented in
+[the results summary](../README.md) and [technical report](../../REPORT.md).

@@ -1,5 +1,9 @@
 # Upload interface
 
+The application is deployed on Streamlit Community Cloud:
+[Open the credential extractor](https://technical-challenge-ai-engineer-89lj62eh39mpw3v9jnivwb.streamlit.app/).
+The instructions below also support running it locally.
+
 The Streamlit interface uses the same `scripts.extract.extract` function as the CLI and
 evaluation runner. It accepts PDF, PNG, JPG, JPEG, and WebP, processes a document
 only when **Extract JSON** is selected, and displays the eight-field JSON result.
@@ -78,7 +82,7 @@ clears the previous evaluation.
 Selecting the evaluation button again intentionally starts another paid run. The
 interface does not overwrite or publish archived results.
 
-## Secrets and deployment preparation
+## Deployment configuration and secrets
 
 The interface also supports a root-level `OPENROUTER_API_KEY` in Streamlit secrets.
 For local secrets, `.streamlit/secrets.toml` is ignored by Git. On a host supporting
@@ -90,8 +94,8 @@ Entry point: `deploy/app.py`. Start from the repository root with
 `streamlit run deploy/app.py`. Install `deploy/requirements.txt`, which includes
 the core requirements. Keep the `scripts/` package, `docs/`, and `expected/`
 available. `.streamlit/config.toml` and optional `.streamlit/secrets.toml` stay at
-the repository root, where Streamlit discovers them. Hosting
-and publication are a later stage; nothing is deployed by creating this interface.
+the repository root, where Streamlit discovers them. The live deployment is
+hosted on Streamlit Community Cloud at the URL above.
 
 ## Upload handling and limits
 
@@ -108,7 +112,8 @@ the actual saved extractor outputs, including error objects and invalid model
 content when present, so failures can be inspected. Authentication headers,
 provider HTTP error bodies, and model reasoning are not included. This is a
 challenge demonstration, not a production PHI service or a
-claim about provider retention. Production controls belong in the final report.
+claim about provider retention. Proposed production controls are described in
+[the technical report](../REPORT.md).
 
 ## Verification
 
@@ -120,9 +125,9 @@ Upload handling, UI behavior, and export re-scoring are checked with temporary
 files and mocked extraction. Export checks include a deliberately incorrect
 prediction and confirm that the downloaded files reproduce its non-perfect score.
 These checks make no paid model requests and do not change the
-archived evaluation results. Perform the final live upload check yourself with
-the configured key before deployment.
+archived evaluation results. Live extraction requires a configured server key;
+the offline checks do not establish the deployed provider's current availability.
 
-Verified locally with Streamlit 1.67.0, including the AppTest UI harness, server
-startup, and health endpoint. Browser screenshot review could not be completed
-because the browser access host was unavailable in this session.
+Local verification used Streamlit 1.67.0, including the AppTest UI harness, server
+startup, and health endpoint. This verification is separate from the published
+deployment; no live extraction request was made during documentation updates.

@@ -116,5 +116,6 @@ frozen configuration and use independent documents, when available, before makin
 broader accuracy claims. Preserve the scorer and labels, and document issuer-name
 representation ambiguities rather than hiding them with fuzzy scoring.
 
-The user makes all commits and paid API calls. BASELINE.md and EVALUATION.md are
-being kept for the final documentation pass rather than this results commit.
+See [the technical report](../REPORT.md) for the completed challenge write-up and
+live application, [BASELINE.md](../BASELINE.md) for running new experiments, and
+[EVALUATION.md](../EVALUATION.md) for the scoring contract.

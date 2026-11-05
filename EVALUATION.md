@@ -9,15 +9,16 @@ access API credentials, or change the supplied documents and labels.
 With existing extractor outputs saved as `<document>.json` in a directory:
 
 ```bash
-python -m scripts.evaluate --predictions outputs/baseline/predictions --report outputs/baseline/recomputed.json
+python -m scripts.evaluate --predictions results/v02-image-quality/predictions
 ```
 
 This command only scores files. It does not generate predictions. Creating a
 baseline with the original extractor requires model calls; see [BASELINE.md](BASELINE.md)
-for the user-run procedure and saved run evidence. No model baseline has been
-measured as part of implementing this evaluator or preparing the runner.
-The subsequent user-run baseline is preserved with its measurements in
-[results/v00-baseline/](results/v00-baseline/README.md).
+for the user-run procedure and saved run evidence. The original user-run baseline
+is preserved in [results/v00-baseline/](results/v00-baseline/README.md); selected
+v01 and final v02 results are summarized in [results/README.md](results/README.md).
+The deployed app uses this same evaluator for fresh sample evaluations; see
+[the interface documentation](deploy/README.md).
 
 The document and expected-output directories default to `docs/` and `expected/`
 at the repository root, independently of the script location. Run module commands from the repository root. Override them with
@@ -91,7 +92,8 @@ Reports contain expected and predicted field values for diagnosis; treat them as
 sensitive if evaluating real documents. Parsing errors do not dump raw responses.
 Do not put credentials in predictions, report metadata, logs, or source control.
 The existing `.gitignore` excludes `outputs/`; reviewed challenge evaluation
-reports can be saved under `results/` when genuine baseline results are available.
+reports are published under `results/`; new genuine runs can be reviewed and
+archived separately without replacing the historical evidence.
 
 ## Offline verification
 

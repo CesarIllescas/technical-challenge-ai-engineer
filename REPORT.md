@@ -7,6 +7,8 @@ cost of approximately **$0.001725 per document**. These are development-set
 results; the samples were used during iteration, so this score does not establish
 accuracy on unseen documents or guarantee that every new run will score 100%.
 
+**Deployed application:** [Credential extractor on Streamlit Community Cloud](https://technical-challenge-ai-engineer-89lj62eh39mpw3v9jnivwb.streamlit.app/).
+
 ## Evaluation and measured improvements
 
 I built the offline evaluator before changing extraction behavior. It compares
@@ -149,7 +151,7 @@ The final predictions can be independently scored without model requests:
 python -m scripts.evaluate --predictions results/v02-image-quality/predictions
 ```
 
-The Streamlit interface supports upload-to-JSON viewing and download. Its sample
+The deployed Streamlit interface supports upload-to-JSON viewing and download. Its sample
 evaluation runs fresh extraction, computes metrics with the same evaluator, and
 lets users inspect generated and expected JSON. The downloadable ZIP includes
 the actual scored predictions, labels, reference configuration, report, and run

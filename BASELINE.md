@@ -2,25 +2,27 @@
 
 The runner calls the current extractor once per document, saves the returned
 credential JSON and separate response metadata, and runs the offline evaluator.
-The current v01 experiment uses explicit extraction instructions and
-passes the evaluation reference date/window into the prompt. It preserves the
-first-page 100-DPI rendering, request options, model selection, and JSON parsing.
-Source hashes and experiment summaries identify each extraction version.
+It runs the current v02 implementation: explicit extraction instructions,
+configured reference date/window, first-page 200-DPI rendering, conservative
+orientation correction, and local validation and expiration rules. A new run
+does not recreate the original v00 baseline. Source hashes and experiment
+summaries identify each extraction version.
 
-**Running this command makes paid OpenRouter requests.** The user runs it locally;
-no real requests or model results were produced while preparing this stage.
+**Running the extraction commands below makes paid OpenRouter requests.** The
+user performed the recorded model runs; offline scoring does not make requests.
 
-The subsequent user-run baseline has now been reviewed and archived in
-[results/v00-baseline/](results/v00-baseline/README.md). For future version and
-commit tracking, follow [the results workflow](results/README.md). Keep that
-baseline unchanged when preparing later improvement iterations.
+The original baseline is archived in
+[results/v00-baseline/](results/v00-baseline/README.md). The selected v01 and final
+v02 measurements are also published under [results/](results/README.md). Keep
+these historical results unchanged when preparing new experiments. See
+[REPORT.md](REPORT.md) for the completed analysis and deployed application.
 
 ## Before the paid run
 
 1. Check the available OpenRouter credit and the selected model's image support,
    availability, and price in OpenRouter. These have not been verified here. The
    supplied key has a $5 limit; leave credit for later iterations and reviewer use.
-2. Use the existing virtual environment with the starter's dependencies installed.
+2. Use the existing virtual environment with `requirements.txt` installed.
    The runner adds no dependencies. Its `--help` command is offline.
 3. Set `OPENROUTER_API_KEY` in your local shell or deployment secret store. The
    starter and runner do not load `.env` automatically. Never paste the key into
@@ -40,7 +42,7 @@ Remove-Variable baselineApiKey
 From the repository root in PowerShell:
 
 ```powershell
-& .\.venv\Scripts\python.exe -B -m scripts.run_baseline --run-dir outputs/v01-contract
+& .\.venv\Scripts\python.exe -B -m scripts.run_baseline --run-dir outputs/new-run
 ```
 
 The model defaults to `OPENROUTER_MODEL` when set, otherwise the starter default
@@ -48,7 +50,7 @@ The model defaults to `OPENROUTER_MODEL` when set, otherwise the starter default
 it. To explicitly request the original default despite an environment override:
 
 ```powershell
-& .\.venv\Scripts\python.exe -B -m scripts.run_baseline --run-dir outputs/v01-contract --model deepseek/deepseek-v4.1-flash
+& .\.venv\Scripts\python.exe -B -m scripts.run_baseline --run-dir outputs/new-run --model deepseek/deepseek-v4.1-flash
 ```
 
 Choose **one** run command. There are eight document invocations, each with at
@@ -64,7 +66,7 @@ failed-run evidence rather than mixing fresh outputs into a prior run.
 
 ## Saved evidence
 
-Inside the chosen run directory (for example `outputs/v01-contract/`):
+Inside the chosen run directory (for example `outputs/new-run/`):
 
 - `predictions/<document>.json`: values returned by the extractor,
   including its error object if a model response could not be parsed.
@@ -120,8 +122,8 @@ For the extraction CLI alone, metadata capture is optional and stored separately
 & .\.venv\Scripts\python.exe -B -m scripts.extract docs/tx_01.pdf --out-dir outputs/metadata-check/predictions --metadata-dir outputs/metadata-check/metadata
 ```
 
-This example makes one paid request if the user runs it; it has not been executed
-during implementation. `extract(path, model)` still returns only the credential
+This example makes one paid request if the user runs it.
+`extract(path, model)` still returns only the credential
 object; callers can pass an empty `metadata` dictionary to collect the accounting
 fields separately. The dictionary is cleared at the start of each extraction.
 `call_model` now returns the full response object internally, rather than discarding
@@ -141,18 +143,18 @@ operational run from a completed extraction benchmark.
 
 ## After the run
 
-Tell the assistant the run directory and whether it finished. The saved files in
-the shared workspace are sufficient to analyze field errors; no key is needed.
+Inspect the run directory and whether it finished. The saved files are sufficient
+to analyze field errors; no key is needed for this analysis.
 Captured response accounting is available in `run.json`; any separate billing
 evidence can be supplied without credentials. The original baseline has already
-been scored and reviewed. The metadata addition has only been verified with
-mocked responses; its live response shape will be confirmed on a future user-run
-request. It is an instrumentation change, not a measured extraction improvement.
+been scored and reviewed. Response accounting is present in the published v01
+and final v02 runs, including complete token and cost coverage for the final run.
+Accounting is instrumentation, not an extraction-quality improvement.
 
 To rescore already saved outputs without making API requests:
 
 ```powershell
-& .\.venv\Scripts\python.exe -B -m scripts.evaluate --predictions outputs/baseline/predictions --report outputs/baseline/evaluation.json
+& .\.venv\Scripts\python.exe -B -m scripts.evaluate --predictions results/v02-image-quality/predictions
 ```
 
 After review, the genuine evaluation and run metadata can be copied to a dedicated

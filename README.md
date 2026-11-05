@@ -1,5 +1,16 @@
 # Technical Challenge – AI Engineer
 
+**Live application:** [Open the credential extractor](https://technical-challenge-ai-engineer-89lj62eh39mpw3v9jnivwb.streamlit.app/).
+Upload a document to view and download its extracted JSON, or use **Evaluate
+samples** to run the original documents and inspect the predictions and metrics.
+Extraction and sample evaluation use paid model requests when explicitly selected.
+
+See the [technical report](REPORT.md) for results, model choice, costs, and
+production considerations, and [interface documentation](deploy/README.md) for
+local setup and deployment configuration.
+
+## Original challenge instructions
+
 Build an AI system that extracts structured data from medical licenses and certifications, measure its accuracy with an eval, improve it, and deploy it so we can try it. Expect about 90 minutes of work; you have 7 days to submit.
 
 ## The problem
@@ -99,9 +110,10 @@ python -m scripts.extract docs/tx_01.pdf
 python -m scripts.extract docs/ --out-dir outputs/
 ```
 
-The base script uses `deepseek/deepseek-v4.1-flash` by default. Use `--model` or `OPENROUTER_MODEL` to try a different OpenRouter model.
-
-The base script is intentionally simple. Everything in it is fair game to change.
+The current extractor uses `deepseek/deepseek-v4.1-flash` by default. Use `--model`
+or `OPENROUTER_MODEL` to try a different OpenRouter model. It includes the final
+v02 prompt, 200-DPI first-page PDF rendering, orientation correction, and local
+validation and expiration rules described in [REPORT.md](REPORT.md).
 
 ## Current project layout
 
