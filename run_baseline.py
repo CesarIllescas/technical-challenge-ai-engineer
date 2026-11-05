@@ -91,7 +91,7 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
             for path in provenance_files
         },
         "evaluation_reference": reference,
-        "reference_applied_to_extractor": False,
+        "reference_applied_to_extractor": True,
         "usage": None,
         "cost_usd": None,
         "cost_note": "Source: response usage.cost (USD-denominated OpenRouter credits). "
@@ -115,7 +115,9 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
         print(f"Extracting {path.name} with {model}...", flush=True)
         started = perf_counter()
         try:
-            prediction = baseline.extract(path, model, metadata=record["response"])
+            prediction = baseline.extract(path, model, metadata=record["response"],
+                                          reference_date=reference["reference_date"],
+                                          expiring_soon_window_days=reference["expiring_soon_window_days"])
         except (Exception, KeyboardInterrupt) as exc:
             record["status"] = "interrupted" if isinstance(exc, KeyboardInterrupt) else "failed"
             record["error_type"] = type(exc).__name__

@@ -36,7 +36,7 @@ class BaselineRunnerTests(unittest.TestCase):
         metadata = run_baseline(self.run_dir)
         self.assertEqual(self.fake.extract.call_count, 8)
         self.assertEqual(metadata["model_requested"], "test/default")
-        self.assertFalse(metadata["reference_applied_to_extractor"])
+        self.assertTrue(metadata["reference_applied_to_extractor"])
         self.assertIsNone(metadata["cost_usd"])
         self.assertIsNone(metadata["usage"])
         self.assertEqual(metadata["cost_reported_documents"], 0)
@@ -49,6 +49,9 @@ class BaselineRunnerTests(unittest.TestCase):
             self.assertEqual(model, "test/default")
             output = json.loads((self.run_dir / "predictions" / f"{path.stem}.json").read_text(encoding="utf-8"))
             self.assertEqual(output, self.labels[path.stem])
+        for call in self.fake.extract.call_args_list:
+            self.assertEqual(call.kwargs["reference_date"], "2026-11-01")
+            self.assertEqual(call.kwargs["expiring_soon_window_days"], 60)
         report = json.loads((self.run_dir / "evaluation.json").read_text(encoding="utf-8"))
         self.assertEqual(report["overall"]["correct"], 64)
         self.assertNotIn("test-placeholder", (self.run_dir / "run.json").read_text(encoding="utf-8"))
@@ -95,7 +98,7 @@ class BaselineRunnerTests(unittest.TestCase):
             self.assertEqual(run_baseline(self.run_dir)["model_requested"], "test/environment")
 
     def test_aggregates_response_costs_and_native_token_counts(self):
-        def extract(path, model, *, metadata):
+        def extract(path, model, *, metadata, **kwargs):
             metadata.update({
                 "response_id": f"synthetic-{path.stem}", "model": "test/served",
                 "usage": {"prompt_tokens": 100, "completion_tokens": 20,
@@ -116,7 +119,7 @@ class BaselineRunnerTests(unittest.TestCase):
         self.assertEqual(saved, metadata)
 
     def test_partial_failure_preserves_known_charge_without_claiming_total_cost(self):
-        def extract(path, model, *, metadata):
+        def extract(path, model, *, metadata, **kwargs):
             if path.stem == "al_01":
                 metadata.update({"usage": {"cost": 0.0003}})
                 return self.labels[path.stem]
@@ -134,7 +137,7 @@ class BaselineRunnerTests(unittest.TestCase):
     def test_missing_cost_is_distinct_from_explicit_zero(self):
         for cost in (None, 0, True, -0.01, "0.01"):
             with self.subTest(cost=cost):
-                def extract(path, model, *, metadata):
+                def extract(path, model, *, metadata, **kwargs):
                     metadata.update({"usage": {"cost": cost}})
                     return self.labels[path.stem]
                 self.fake.extract.side_effect = extract

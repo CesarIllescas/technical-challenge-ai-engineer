@@ -39,7 +39,7 @@ class ExtractionMetadataTests(unittest.TestCase):
         self.image_patch.start()
         self.addCleanup(self.image_patch.stop)
 
-    def test_call_model_retains_response_and_does_not_change_request(self):
+    def test_call_model_retains_response_and_uses_configured_prompt(self):
         returned = extract.call_model("image/png", "synthetic-image", "test/requested")
         self.assertEqual(returned, self.payload)
         self.response.raise_for_status.assert_called_once()
@@ -48,10 +48,48 @@ class ExtractionMetadataTests(unittest.TestCase):
             extract.OPENROUTER_URL,
             headers={"Authorization": "Bearer synthetic-api-key"},
             json={"model": "test/requested", "messages": [{"role": "user", "content": [
-                {"type": "text", "text": extract.PROMPT},
+                {"type": "text", "text": extract.build_prompt()},
                 {"type": "image_url", "image_url": {"url": "data:image/png;base64,synthetic-image"}},
             ]}]}, timeout=120,
         )
+
+    def test_reference_overrides_reach_request_without_requiring_default_file(self):
+        with patch.object(extract, "REFERENCE_PATH", Path("missing-reference.json")):
+            extract.extract(Path("synthetic.pdf"), "test/requested",
+                            reference_date="2030-02-03", expiring_soon_window_days=14)
+        prompt = self.post.call_args.kwargs["json"]["messages"][0]["content"][0]["text"]
+        self.assertIn("Reference date: 2030-02-03", prompt)
+        self.assertIn("Expiring-soon window: 14 days", prompt)
+        self.assertNotIn("2026-11-01", prompt)
+
+    def test_invalid_reference_values_fail_before_http_request(self):
+        cases = [("2026-02-30", 60), ("20261101", 60),
+                 ("2026-11-01", -1), ("2026-11-01", True)]
+        for reference_date, window in cases:
+            with self.subTest(reference_date=reference_date, window=window):
+                with self.assertRaises(ValueError):
+                    extract.extract(Path("synthetic.pdf"), "test/requested",
+                                    reference_date=reference_date, expiring_soon_window_days=window)
+        self.post.assert_not_called()
+
+    def test_reference_defaults_use_only_configuration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            reference_path = Path(directory) / "_reference.json"
+            reference_path.write_text(json.dumps({
+                "reference_date": "2031-01-02", "expiring_soon_window_days": 0,
+            }), encoding="utf-8")
+            with patch.object(extract, "REFERENCE_PATH", reference_path):
+                prompt = extract.build_prompt()
+                overridden = extract.build_prompt(reference_date="2032-01-02")
+        self.assertIn("Reference date: 2031-01-02", prompt)
+        self.assertIn("Expiring-soon window: 0 days", prompt)
+        self.assertIn("Reference date: 2032-01-02", overridden)
+
+    def test_v01_preserves_model_output_without_local_correction(self):
+        output = {"is_credential": False, "expiration_date": "12/31/2026",
+                  "expiration_status": "valid"}
+        self.payload["choices"][0]["message"]["content"] = json.dumps(output)
+        self.assertEqual(extract.extract(Path("synthetic.pdf"), "test/requested"), output)
 
     def test_extract_preserves_prediction_interface_and_selects_metadata(self):
         metadata = {"stale": "must be cleared"}
@@ -124,6 +162,15 @@ class ExtractionMetadataTests(unittest.TestCase):
                     extract.main()
             self.assertEqual(error.exception.code, 2)
             self.post.assert_not_called()
+
+    def test_cli_forwards_reference_overrides(self):
+        args = ["extract.py", "synthetic.pdf", "--reference-date", "2030-01-01",
+                "--expiring-soon-window-days", "30"]
+        with patch("sys.argv", args), patch("sys.stdout"):
+            extract.main()
+        prompt = self.post.call_args.kwargs["json"]["messages"][0]["content"][0]["text"]
+        self.assertIn("Reference date: 2030-01-01", prompt)
+        self.assertIn("Expiring-soon window: 30 days", prompt)
 
 
 if __name__ == "__main__":
