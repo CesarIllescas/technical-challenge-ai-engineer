@@ -1,6 +1,7 @@
 """Streamlit upload interface. Model calls occur only on an explicit submission."""
 
 import hashlib
+import json
 import os
 import sys
 from datetime import date
@@ -79,6 +80,8 @@ def render_upload(configured: bool, reference: str, window: int) -> None:
         if result["is_credential"] is False:
             st.info("This document is not a license or certification.")
         st.json(result)
+        st.download_button("Download JSON", json.dumps(result, indent=2, ensure_ascii=False).encode("utf-8"),
+                           file_name="credential.json", mime="application/json", key="download_upload")
     elif uploaded is None:
         st.info("Choose a document, then select Extract JSON.")
     st.caption("Documents are sent to the extraction provider for processing. "
@@ -150,6 +153,30 @@ def render_sample_evaluation(configured: bool) -> None:
     if mismatches:
         with st.expander("Field mismatches"):
             st.json(mismatches)
+    st.subheader("Inspect and download the evaluation data")
+    st.caption("These are the saved outputs used to calculate this run's metrics. "
+               "Viewing or downloading them does not run extraction again.")
+    st.download_button("Download all outputs (ZIP)", result["archive"],
+                       file_name="sample-evaluation.zip", mime="application/zip", key="download_evaluation")
+    st.download_button("Download accuracy report (JSON)",
+                       json.dumps(report, indent=2, ensure_ascii=False).encode("utf-8"),
+                       file_name="evaluation.json", mime="application/json", key="download_report")
+    selected = st.selectbox("Document", [row["document"] for row in report["documents"]],
+                            key="evaluation_document")
+    st.markdown("**Generated JSON**")
+    content = result["prediction_files"].get(selected)
+    if content is None:
+        st.info(f"No output was generated for this document (status: {statuses[selected]}).")
+    else:
+        try:
+            st.json(json.loads(content))
+        except (ValueError, UnicodeDecodeError):
+            st.warning("The saved output is not valid JSON.")
+            st.code(content.decode("utf-8", errors="replace"), language="text")
+        st.download_button("Download document JSON", content, file_name=f"{selected}.json",
+                           mime="application/json", key="download_document")
+    with st.expander("Expected JSON"):
+        st.json(result["expected"][selected])
 
 
 def main() -> None:

@@ -1,11 +1,16 @@
 """Fresh sample evaluation through the shared runner, with the model fully mocked."""
 
+import json
 import os
 import unittest
+from io import BytesIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from zipfile import ZipFile
 from unittest.mock import patch
 
 from deploy.evaluation_service import EvaluationError, evaluate_samples, sample_configuration
-from scripts.evaluate import ROOT, load_fixtures
+from scripts.evaluate import ROOT, evaluate, load_fixtures
 from scripts.extract import DEFAULT_MODEL
 from scripts.run_baseline import run_baseline
 
@@ -35,6 +40,10 @@ class EvaluationServiceTests(unittest.TestCase):
             self.assertEqual(set(call.kwargs), {"metadata", "reference_date", "expiring_soon_window_days"})
         self.assertFalse(runner.call_args.args[0].parent.exists())
         self.assertEqual(runner.call_args.kwargs, {"verbose": False})
+        self.assertEqual(set(result["prediction_files"]), set(self.labels))
+        self.assertEqual(result["expected"], self.labels)
+        for stem, content in result["prediction_files"].items():
+            self.assertEqual(json.loads(content), self.labels[stem])
 
     def test_incomplete_run_keeps_every_document_in_score_without_retry(self):
         self.extract.side_effect = [self.labels["al_01"], RuntimeError("private provider response")]
@@ -45,6 +54,37 @@ class EvaluationServiceTests(unittest.TestCase):
         self.assertEqual(result["run"]["documents"][1]["status"], "failed")
         self.assertTrue(all(row["status"] == "not_attempted" for row in result["run"]["documents"][2:]))
         self.assertNotIn("private provider response", str(result))
+        self.assertEqual(set(result["prediction_files"]), {"al_01"})
+        with ZipFile(BytesIO(result["archive"])) as archive:
+            self.assertEqual([name for name in archive.namelist() if name.startswith("predictions/")],
+                             ["predictions/al_01.json"])
+
+    def test_downloaded_files_reproduce_nonperfect_metrics_with_exact_prediction_bytes(self):
+        def predict(path, model, **kwargs):
+            prediction = dict(self.labels[path.stem])
+            if path.stem == "al_01":
+                prediction["holder_name"] = "Different synthetic holder É"
+            return prediction
+        self.extract.side_effect = predict
+        result = evaluate_samples()
+        self.assertEqual(result["report"]["overall"]["correct"], 63)
+        self.assertEqual(json.loads(result["prediction_files"]["al_01"])["holder_name"],
+                         "Different synthetic holder É")
+        with TemporaryDirectory() as directory:
+            destination = Path(directory)
+            with ZipFile(BytesIO(result["archive"])) as archive:
+                for stem, content in result["prediction_files"].items():
+                    self.assertEqual(archive.read(f"predictions/{stem}.json"), content)
+                self.assertEqual(json.loads(archive.read("evaluation.json")), result["report"])
+                self.assertEqual(json.loads(archive.read("run.json")), result["run"])
+                self.assertNotIn(b"synthetic-key", archive.read("run.json"))
+                for stem in self.labels:
+                    self.assertEqual(archive.read(f"expected/{stem}.json"),
+                                     (ROOT / "expected" / f"{stem}.json").read_bytes())
+                archive.extractall(destination)
+            reproduced = evaluate(destination / "predictions", expected_dir=destination / "expected")
+        self.assertEqual(reproduced, result["report"])
+        self.assertEqual(self.extract.call_count, 8)
 
     def test_missing_key_never_starts_extraction(self):
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": ""}):

@@ -3,6 +3,7 @@
 The Streamlit interface uses the same `scripts.extract.extract` function as the CLI and
 evaluation runner. It accepts PDF, PNG, JPG, JPEG, and WebP, processes a document
 only when **Extract JSON** is selected, and displays the eight-field JSON result.
+Select **Download JSON** to save that result as `credential.json`.
 Non-credentials display their normal `false`/null result. Failed requests and
 unreadable documents display a controlled error rather than a provider response.
 
@@ -56,9 +57,24 @@ settings. Failed and unattempted documents remain in the denominator. The runner
 stops on an operational failure without retrying; partial accuracy is still shown
 with a warning. Model/validation error outputs are scored as failures.
 
-Predictions and run files exist only in a temporary directory during evaluation;
-they are removed afterward. The report stays in the current browser session,
-ordinary reruns do not repeat the calls, and changing the server model clears it.
+After evaluation, select a document to inspect its generated JSON and expand
+**Expected JSON** to compare it with the supplied label. Download an individual
+prediction, the accuracy report, or **all outputs (ZIP)**. Missing predictions are
+identified explicitly; saved error outputs remain visible and downloadable.
+
+The ZIP contains the exact prediction files used for scoring, expected labels,
+reference configuration, `evaluation.json`, `run.json`, and re-scoring instructions.
+Extract it into `sample-evaluation/` under the repository root, then independently
+recompute the report without making model requests:
+
+```powershell
+& .\.venv\Scripts\python.exe -m scripts.evaluate --predictions sample-evaluation/predictions --expected sample-evaluation/expected
+```
+
+Temporary files are removed after evaluation. Their contents and the report stay
+in the current browser session for inspection and download. Viewing, selecting,
+or downloading results does not repeat model calls. Changing the server model
+clears the previous evaluation.
 Selecting the evaluation button again intentionally starts another paid run. The
 interface does not overwrite or publish archived results.
 
@@ -87,9 +103,11 @@ after success or failure. No uploaded documents or live evaluation outputs are w
 cached globally, or logged by the interface; Streamlit keeps uploads/results in
 the active session, and the external provider processes the document.
 
-The app reports only controlled error messages. It does not display authentication
-headers, provider error bodies, model reasoning, or the extractor's raw invalid
-response. This is a challenge demonstration, not a production PHI service or a
+Upload failures show controlled error messages. Sample evaluation exports include
+the actual saved extractor outputs, including error objects and invalid model
+content when present, so failures can be inspected. Authentication headers,
+provider HTTP error bodies, and model reasoning are not included. This is a
+challenge demonstration, not a production PHI service or a
 claim about provider retention. Production controls belong in the final report.
 
 ## Verification
@@ -98,8 +116,10 @@ claim about provider retention. Production controls belong in the final report.
 & .\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
 ```
 
-Upload handling and UI behavior are checked with temporary files and mocked
-extraction. These checks make no paid model requests and do not change the
+Upload handling, UI behavior, and export re-scoring are checked with temporary
+files and mocked extraction. Export checks include a deliberately incorrect
+prediction and confirm that the downloaded files reproduce its non-perfect score.
+These checks make no paid model requests and do not change the
 archived evaluation results. Perform the final live upload check yourself with
 the configured key before deployment.
 

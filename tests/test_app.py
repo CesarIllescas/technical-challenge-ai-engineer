@@ -6,13 +6,14 @@ import types
 import unittest
 from datetime import date
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from streamlit.testing.v1 import AppTest
 
 from scripts.credential import FIELDS
 from scripts.extract import DEFAULT_MODEL
-from scripts.evaluate import ROOT
+from scripts.evaluate import ROOT, evaluate
 
 
 NON_CREDENTIAL = {field: False if field == "is_credential" else None for field in FIELDS}
@@ -35,7 +36,13 @@ class InterfaceTests(unittest.TestCase):
         self.evaluation_result = {"report": report, "run": {
             "documents": [{"document": row["document"], "status": "returned_output"} for row in report["documents"]],
             "cost_usd": None, "reported_cost_usd": None,
-        }}
+        }, "prediction_files": {
+            row["document"]: (ROOT / "results/v02-image-quality/predictions" / f"{row['document']}.json").read_bytes()
+            for row in report["documents"]
+        }, "expected": {
+            row["document"]: json.loads((ROOT / "expected" / f"{row['document']}.json").read_text(encoding="utf-8"))
+            for row in report["documents"]
+        }, "archive": b"synthetic archive for UI testing"}
         self.evaluation_patch = patch("deploy.evaluation_service.evaluate_samples", return_value=self.evaluation_result)
         self.evaluate_samples = self.evaluation_patch.start()
         self.addCleanup(self.evaluation_patch.stop)
@@ -44,6 +51,12 @@ class InterfaceTests(unittest.TestCase):
         app = AppTest.from_file(str(APP_PATH), default_timeout=10)
         app.secrets["OPENROUTER_API_KEY"] = "synthetic-key"
         return app
+
+    def rescore_predictions(self):
+        with TemporaryDirectory() as directory:
+            for stem, content in self.evaluation_result["prediction_files"].items():
+                (Path(directory) / f"{stem}.json").write_bytes(content)
+            self.evaluation_result["report"] = evaluate(Path(directory))
 
     def test_initial_page_does_not_call_model(self):
         app = self.app().run()
@@ -64,6 +77,9 @@ class InterfaceTests(unittest.TestCase):
         self.assertEqual(json.loads(app.json[0].value), NON_CREDENTIAL)
         self.assertTrue(app.button[0].disabled)
         self.assertTrue(any("not a license" in element.value for element in app.info))
+        self.assertEqual(app.download_button[0].label, "Download JSON")
+        app.download_button[0].click().run()
+        self.assertFalse(app.exception)
         app.run()
         self.extract.assert_called_once()
         app.date_input[0].set_value(date(2030, 1, 2)).run()
@@ -103,6 +119,40 @@ class InterfaceTests(unittest.TestCase):
         self.assertTrue(app.button[1].disabled)
         self.assertTrue(app.warning)
         self.extract.assert_not_called()
+
+    def test_generated_and_expected_sample_json_can_be_inspected_without_new_calls(self):
+        generated = json.loads(self.evaluation_result["prediction_files"]["ny_02"])
+        generated["holder_name"] = "Synthetic name É with an intentional mismatch"
+        self.evaluation_result["prediction_files"]["ny_02"] = json.dumps(generated, ensure_ascii=False).encode("utf-8")
+        self.rescore_predictions()
+        app = self.app().run()
+        app.button[1].click().run()
+        app.selectbox[0].select("ny_02").run()
+        self.assertFalse(app.exception)
+        self.assertEqual(app.metric[0].value, "98.44%")
+        self.assertEqual(json.loads(app.json[-2].value), generated)
+        self.assertEqual(json.loads(app.json[-1].value), self.evaluation_result["expected"]["ny_02"])
+        labels = {element.label for element in app.download_button}
+        self.assertEqual(labels, {"Download all outputs (ZIP)", "Download accuracy report (JSON)",
+                                  "Download document JSON"})
+        app.download_button[0].click().run()
+        app.download_button[1].click().run()
+        app.download_button[2].click().run()
+        self.assertFalse(app.exception)
+        self.evaluate_samples.assert_called_once_with()
+        self.extract.assert_not_called()
+
+    def test_missing_sample_output_is_not_presented_as_generated_json(self):
+        del self.evaluation_result["prediction_files"]["al_01"]
+        self.evaluation_result["run"]["documents"][0]["status"] = "failed"
+        self.rescore_predictions()
+        app = self.app().run()
+        app.button[1].click().run()
+        self.assertFalse(app.exception)
+        self.assertTrue(any("No output was generated" in element.value for element in app.info))
+        self.assertNotIn("Download document JSON", {element.label for element in app.download_button})
+        self.assertEqual(app.metric[0].value, "87.50%")
+        self.assertEqual(json.loads(app.json[-1].value), self.evaluation_result["expected"]["al_01"])
 
     def test_explicit_evaluation_displays_accuracy_and_persists_without_repeating_calls(self):
         app = self.app().run()
