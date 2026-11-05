@@ -72,12 +72,21 @@ class CredentialRuleTests(unittest.TestCase):
                         finalize_credential(credential(**{field: invalid}), "2026-11-01", 60)
 
     def test_names_and_identifier_punctuation_are_preserved_without_mutating_input(self):
-        original = credential(holder_name="Example JR", license_number="00012-34.5")
-        snapshot = dict(original)
-        result = finalize_credential(original, "2026-11-01", 60)
-        self.assertEqual(result["holder_name"], "Example JR")
-        self.assertEqual(result["license_number"], "00012-34.5")
-        self.assertEqual(original, snapshot)
+        cases = [
+            ("Example JR", "Example Board"),
+            ("MORGAN ELLIS JR.", "Office of Credential Certification"),
+            ("Alex de la Vega", "Example Department, Licensing Division"),
+        ]
+        for name, authority in cases:
+            with self.subTest(name=name, authority=authority):
+                original = credential(holder_name=name, issuing_authority=authority,
+                                      license_number="00012-34.5")
+                snapshot = dict(original)
+                result = finalize_credential(original, "2026-11-01", 60)
+                self.assertEqual(result["holder_name"], name)
+                self.assertEqual(result["issuing_authority"], authority)
+                self.assertEqual(result["license_number"], "00012-34.5")
+                self.assertEqual(original, snapshot)
 
     def test_malformed_fields_are_rejected_without_type_coercion(self):
         cases = [None, [], {"is_credential": 1}, credential(license_number=123),

@@ -1,4 +1,4 @@
-"""Credential extractor with v01 instructions and v02 deterministic output rules.
+"""Credential extractor with explicit instructions and deterministic output rules.
 
 Sends a license or certification document (PDF or image) to a vision model on
 OpenRouter and prints the extracted fields as JSON.
@@ -42,7 +42,10 @@ without Markdown or commentary, containing exactly these eight keys:
   Classify the document's purpose, not its authenticity: a synthetic/test-data
   disclaimer alone does not change a license or certificate into another type.
 - holder_name: string or null. Preserve the person's name order, capitalization,
-  spelling, accents, initials, hyphens, and personal suffixes such as JR. Exclude
+  spelling, accents, initials, hyphens, and personal suffixes such as JR.
+  Transcribe uppercase, lowercase, and mixed-case letters exactly as printed in
+  the holder's name. Do not convert an uppercase name to title case or apply the
+  capitalization rules for credential_type or issuing_authority to holder_name. Exclude
   professional degrees or qualifications such as MD and DO and their separating
   commas; they are not part of the person's name.
 - credential_type: string or null. Use the credential title or licensed profession
@@ -56,7 +59,12 @@ without Markdown or commentary, containing exactly these eight keys:
 - issuing_authority: string or null. Identify the principal issuing board, state
   agency, or organization using its concise name and state when shown. Exclude
   addresses, contact details, and subordinate administrative offices that are
-  not the issuer. Use standard name capitalization while preserving acronyms.
+  not the issuer. When a parent agency is identified as the issuer and an office
+  is listed as its subordinate administrative unit, return the parent agency's
+  concise name without appending that office. Preserve an office or board name
+  when it is itself the issuing authority; do not remove units solely because
+  their names contain "Office" or follow a comma. Use only relationships supported
+  by the document. Use standard name capitalization while preserving acronyms.
   Do not substitute a familiar organization or invent an official name.
 - issue_date: string or null. Use an explicitly stated issue date, converted to
   a valid ISO calendar date (YYYY-MM-DD). Do not use a notice date, registration
@@ -80,6 +88,10 @@ compare expiration_date with the supplied reference date, not today's date:
 - expiring_soon: expiration_date is on the reference date or within the following
   configured number of days, including the final day of the window.
 - valid: expiration_date is later than that window.
+
+Before returning the JSON, recheck holder_name against the printed name for
+exact letter case and personal-suffix punctuation. Recheck that issuing_authority
+identifies the issuer without appending a subordinate administrative unit.
 """
 
 
@@ -104,7 +116,7 @@ def resolve_reference(reference_date: str | None = None,
 
 def build_prompt(reference_date: str | None = None,
                  expiring_soon_window_days: int | None = None) -> str:
-    """Keep the v01 prompt unchanged while local rules enforce the same reference."""
+    """Append the configured expiration reference to the extraction instructions."""
     reference_date, expiring_soon_window_days = resolve_reference(reference_date, expiring_soon_window_days)
     return (PROMPT + f"\nReference date: {reference_date}\n"
             f"Expiring-soon window: {expiring_soon_window_days} days\n")
