@@ -21,7 +21,7 @@ class BaselineRunnerTests(unittest.TestCase):
         self.fake = types.ModuleType("extract")
         self.fake.DEFAULT_MODEL = "test/default"
         self.fake.SUPPORTED_EXTENSIONS = DOCUMENT_EXTENSIONS
-        self.fake.extract = Mock(side_effect=lambda path, model: self.labels[path.stem])
+        self.fake.extract = Mock(side_effect=lambda path, model, **kwargs: self.labels[path.stem])
         self.module_patch = patch.dict("sys.modules", {"extract": self.fake})
         self.module_patch.start()
         self.addCleanup(self.module_patch.stop)
@@ -39,6 +39,8 @@ class BaselineRunnerTests(unittest.TestCase):
         self.assertFalse(metadata["reference_applied_to_extractor"])
         self.assertIsNone(metadata["cost_usd"])
         self.assertIsNone(metadata["usage"])
+        self.assertEqual(metadata["cost_reported_documents"], 0)
+        self.assertIsNone(metadata["reported_cost_usd"])
         self.assertIn("extract.py", metadata["sha256"])
         self.assertIn("docs/tx_01.pdf", metadata["sha256"])
         self.assertTrue(all(row["status"] == "returned_output" for row in metadata["documents"]))
@@ -68,7 +70,7 @@ class BaselineRunnerTests(unittest.TestCase):
 
     def test_invalid_json_error_output_is_preserved(self):
         output = {"error": "invalid JSON from model", "raw": "synthetic unparseable response"}
-        self.fake.extract.side_effect = lambda path, model: output
+        self.fake.extract.side_effect = lambda path, model, **kwargs: output
         run_baseline(self.run_dir)
         saved = json.loads((self.run_dir / "predictions" / "al_01.json").read_text(encoding="utf-8"))
         self.assertEqual(saved, output)
@@ -91,6 +93,53 @@ class BaselineRunnerTests(unittest.TestCase):
     def test_model_environment_override(self):
         with patch.dict(os.environ, {"OPENROUTER_MODEL": "test/environment"}):
             self.assertEqual(run_baseline(self.run_dir)["model_requested"], "test/environment")
+
+    def test_aggregates_response_costs_and_native_token_counts(self):
+        def extract(path, model, *, metadata):
+            metadata.update({
+                "response_id": f"synthetic-{path.stem}", "model": "test/served",
+                "usage": {"prompt_tokens": 100, "completion_tokens": 20,
+                          "total_tokens": 120, "cost": 0.0003},
+            })
+            return self.labels[path.stem]
+        self.fake.extract.side_effect = extract
+        metadata = run_baseline(self.run_dir)
+        self.assertEqual(metadata["models_reported"], ["test/served"])
+        self.assertEqual(metadata["usage"], {
+            "prompt_tokens": 800, "completion_tokens": 160, "total_tokens": 960,
+        })
+        self.assertEqual(metadata["usage_reported_documents"], 8)
+        self.assertEqual(metadata["cost_reported_documents"], 8)
+        self.assertAlmostEqual(metadata["cost_usd"], 0.0024)
+        self.assertAlmostEqual(metadata["mean_cost_per_document_usd"], 0.0003)
+        saved = json.loads((self.run_dir / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual(saved, metadata)
+
+    def test_partial_failure_preserves_known_charge_without_claiming_total_cost(self):
+        def extract(path, model, *, metadata):
+            if path.stem == "al_01":
+                metadata.update({"usage": {"cost": 0.0003}})
+                return self.labels[path.stem]
+            # A response may include accounting even if its content cannot be consumed.
+            metadata.update({"usage": {"cost": 0.0002}})
+            raise KeyError("synthetic missing choices")
+        self.fake.extract.side_effect = extract
+        metadata = run_baseline(self.run_dir)
+        self.assertEqual(self.fake.extract.call_count, 2)
+        self.assertEqual(metadata["cost_reported_documents"], 2)
+        self.assertAlmostEqual(metadata["reported_cost_usd"], 0.0005)
+        self.assertIsNone(metadata["cost_usd"])
+        self.assertIsNone(metadata["mean_cost_per_document_usd"])
+
+    def test_missing_cost_is_distinct_from_explicit_zero(self):
+        for cost in (None, 0, True, -0.01, "0.01"):
+            with self.subTest(cost=cost):
+                def extract(path, model, *, metadata):
+                    metadata.update({"usage": {"cost": cost}})
+                    return self.labels[path.stem]
+                self.fake.extract.side_effect = extract
+                result = run_baseline(self.run_dir / str(cost))
+                self.assertEqual(result["cost_usd"], 0 if type(cost) is int and cost == 0 else None)
 
 
 if __name__ == "__main__":

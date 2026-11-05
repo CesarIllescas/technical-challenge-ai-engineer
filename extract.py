@@ -50,7 +50,8 @@ def load_image(path: Path) -> tuple[str, str]:
     return mime, base64.b64encode(path.read_bytes()).decode()
 
 
-def call_model(mime: str, image_b64: str, model: str) -> str:
+def call_model(mime: str, image_b64: str, model: str) -> dict:
+    """Return the response body so extraction can retain usage and request metadata."""
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         sys.exit("OPENROUTER_API_KEY is not set")
@@ -73,7 +74,22 @@ def call_model(mime: str, image_b64: str, model: str) -> str:
         timeout=120,
     )
     response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    return response.json()
+
+
+def response_metadata(response: dict) -> dict:
+    """Select response accounting fields without retaining message content or headers."""
+    choices = response.get("choices") or []
+    choice = choices[0] if choices and isinstance(choices[0], dict) else {}
+    return {
+        "response_id": response.get("id"),
+        "model": response.get("model"),
+        "provider": response.get("provider"),
+        "created": response.get("created"),
+        "finish_reason": choice.get("finish_reason"),
+        "native_finish_reason": choice.get("native_finish_reason"),
+        "usage": response.get("usage") if isinstance(response.get("usage"), dict) else None,
+    }
 
 
 def parse_json(text: str) -> dict:
@@ -83,9 +99,16 @@ def parse_json(text: str) -> dict:
     return json.loads(text)
 
 
-def extract(path: Path, model: str) -> dict:
+def extract(path: Path, model: str, *, metadata: dict | None = None) -> dict:
+    """Return credential JSON; optionally populate a separate response-metadata dict."""
+    if metadata is not None:
+        metadata.clear()
     mime, image_b64 = load_image(path)
-    raw = call_model(mime, image_b64, model)
+    response = call_model(mime, image_b64, model)
+    if metadata is not None:
+        # Capture accounting before parsing, even when content is malformed.
+        metadata.update(response_metadata(response))
+    raw = response["choices"][0]["message"]["content"]
     try:
         return parse_json(raw)
     except json.JSONDecodeError:
@@ -96,8 +119,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Extract credential fields from a document.")
     parser.add_argument("path", type=Path, help="A document or a folder of documents")
     parser.add_argument("--out-dir", type=Path, help="Write one <document>.json per input here")
+    parser.add_argument("--metadata-dir", type=Path, help="Optionally save response metadata separately")
     parser.add_argument("--model", default=os.environ.get("OPENROUTER_MODEL", DEFAULT_MODEL))
     args = parser.parse_args()
+    if args.metadata_dir and args.out_dir and args.metadata_dir.resolve() == args.out_dir.resolve():
+        parser.error("--metadata-dir must differ from --out-dir")
 
     if args.path.is_dir():
         files = sorted(p for p in args.path.iterdir() if p.suffix.lower() in SUPPORTED_EXTENSIONS)
@@ -106,9 +132,16 @@ def main() -> None:
 
     if args.out_dir:
         args.out_dir.mkdir(parents=True, exist_ok=True)
+    if args.metadata_dir:
+        args.metadata_dir.mkdir(parents=True, exist_ok=True)
 
     for file in files:
-        result = extract(file, args.model)
+        metadata = {} if args.metadata_dir else None
+        result = extract(file, args.model, metadata=metadata)
+        if args.metadata_dir:
+            (args.metadata_dir / f"{file.stem}.json").write_text(
+                json.dumps(metadata, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+            )
         output = json.dumps(result, indent=2, ensure_ascii=False)
         if args.out_dir:
             (args.out_dir / f"{file.stem}.json").write_text(output + "\n")
