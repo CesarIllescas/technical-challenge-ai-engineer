@@ -9,6 +9,10 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import extract
+from credential import FIELDS
+
+
+NON_CREDENTIAL = {field: False if field == "is_credential" else None for field in FIELDS}
 
 
 class ExtractionMetadataTests(unittest.TestCase):
@@ -85,20 +89,21 @@ class ExtractionMetadataTests(unittest.TestCase):
         self.assertIn("Expiring-soon window: 0 days", prompt)
         self.assertIn("Reference date: 2032-01-02", overridden)
 
-    def test_v01_preserves_model_output_without_local_correction(self):
+    def test_v02_clears_non_credential_fields_locally(self):
         output = {"is_credential": False, "expiration_date": "12/31/2026",
                   "expiration_status": "valid"}
         self.payload["choices"][0]["message"]["content"] = json.dumps(output)
-        self.assertEqual(extract.extract(Path("synthetic.pdf"), "test/requested"), output)
+        self.assertEqual(extract.extract(Path("synthetic.pdf"), "test/requested"), NON_CREDENTIAL)
 
     def test_extract_preserves_prediction_interface_and_selects_metadata(self):
         metadata = {"stale": "must be cleared"}
         prediction = extract.extract(Path("synthetic.pdf"), "test/requested", metadata=metadata)
-        self.assertEqual(prediction, {"is_credential": False})
+        self.assertEqual(prediction, NON_CREDENTIAL)
         self.assertEqual(metadata, {
             "response_id": "synthetic-generation", "model": "test/served", "provider": "test-provider",
             "created": 1793900000, "finish_reason": "stop", "native_finish_reason": "stop",
             "usage": self.payload["usage"],
+            "postprocessing": {"changed_fields": list(FIELDS[1:])},
         })
         serialized = json.dumps(metadata)
         self.assertNotIn("private model reasoning", serialized)
@@ -119,7 +124,7 @@ class ExtractionMetadataTests(unittest.TestCase):
         self.response.json.return_value = {"choices": copy.deepcopy(self.payload["choices"])}
         metadata = {}
         self.assertEqual(extract.extract(Path("synthetic.pdf"), "test/requested", metadata=metadata),
-                         {"is_credential": False})
+                         NON_CREDENTIAL)
         self.assertIsNone(metadata["usage"])
         self.assertIsNone(metadata["model"])
         self.assertIsNone(metadata["response_id"])
@@ -149,7 +154,7 @@ class ExtractionMetadataTests(unittest.TestCase):
                 extract.main()
             prediction = json.loads((root / "predictions/synthetic.json").read_text(encoding="utf-8"))
             metadata = json.loads((root / "metadata/synthetic.json").read_text(encoding="utf-8"))
-            self.assertEqual(prediction, {"is_credential": False})
+            self.assertEqual(prediction, NON_CREDENTIAL)
             self.assertEqual(metadata["response_id"], "synthetic-generation")
             self.assertEqual(metadata["usage"], self.payload["usage"])
 
@@ -171,6 +176,37 @@ class ExtractionMetadataTests(unittest.TestCase):
         prompt = self.post.call_args.kwargs["json"]["messages"][0]["content"][0]["text"]
         self.assertIn("Reference date: 2030-01-01", prompt)
         self.assertIn("Expiring-soon window: 30 days", prompt)
+
+    def test_validation_error_preserves_usage_and_does_not_retry(self):
+        self.payload["choices"][0]["message"]["content"] = json.dumps({
+            **NON_CREDENTIAL, "is_credential": True, "expiration_date": "not a date",
+        })
+        metadata = {}
+        output = extract.extract(Path("synthetic.pdf"), "test/requested", metadata=metadata)
+        self.assertEqual(output["error"], "invalid credential output")
+        self.assertIn("expiration_date", output["details"])
+        self.assertNotIn("not a date", output["details"])
+        self.assertEqual(metadata["usage"]["cost"], 0.0003)
+        self.post.assert_called_once()
+
+    def test_non_text_content_is_an_explicit_failure_with_usage_preserved(self):
+        self.payload["choices"][0]["message"]["content"] = None
+        metadata = {}
+        output = extract.extract(Path("synthetic.pdf"), "test/requested", metadata=metadata)
+        self.assertEqual(output["error"], "invalid model content")
+        self.assertEqual(metadata["usage"]["cost"], 0.0003)
+        self.post.assert_called_once()
+
+    def test_local_status_uses_same_reference_as_request(self):
+        self.payload["choices"][0]["message"]["content"] = json.dumps({
+            **NON_CREDENTIAL, "is_credential": True, "expiration_date": "2030-02-03",
+            "expiration_status": "expired",
+        })
+        metadata = {}
+        output = extract.extract(Path("synthetic.pdf"), "test/requested", metadata=metadata,
+                                 reference_date="2030-02-01", expiring_soon_window_days=2)
+        self.assertEqual(output["expiration_status"], "expiring_soon")
+        self.assertEqual(metadata["postprocessing"]["changed_fields"], ["expiration_status"])
 
 
 if __name__ == "__main__":

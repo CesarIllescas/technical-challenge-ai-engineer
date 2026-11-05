@@ -71,7 +71,7 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
         if path.is_file() and path.stem in expected
         and path.suffix.lower() in baseline.SUPPORTED_EXTENSIONS
     )
-    provenance_files = [ROOT / "extract.py", ROOT / "evaluate.py", ROOT / "run_baseline.py"]
+    provenance_files = [ROOT / "extract.py", ROOT / "credential.py", ROOT / "evaluate.py", ROOT / "run_baseline.py"]
     provenance_files += sorted((ROOT / "expected").glob("*.json")) + documents
     versions = {}
     for package in ("pymupdf", "requests"):
@@ -128,7 +128,7 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
                   f"HTTP status={record['http_status']}. No automatic retry.")
             break
         else:
-            # Preserve the starter's returned value, including invalid-JSON error objects.
+            # Evaluate the final extractor output, including validation-error objects.
             write_json(predictions_dir / f"{path.stem}.json", prediction)
             record["status"] = "returned_output"
         finally:

@@ -116,6 +116,38 @@ Reproduce the v01 score offline without overwriting evidence:
 & .\.venv\Scripts\python.exe -B evaluate.py --predictions results/v01-contract/predictions
 ```
 
+## v02 preparation (measurement pending)
+
+v02 adds local date handling, expiration calculation, non-credential consistency,
+and final output validation while keeping the v01 prompt, model, rendering, and
+request options fixed. No paid v02 run or measured v02 result is recorded yet.
+
+- ISO dates are accepted. Slash-separated dates with four-digit years are converted
+  only when their month/day interpretation is unique. Ambiguous order, two-digit
+  years, impossible dates, and missing extracted date fields produce explicit
+  failures rather than guessed dates or `no_expiration`.
+- A real null expiration on a credential becomes `no_expiration`. Otherwise Python
+  computes status from the same reference/window used in the prompt: past dates
+  are expired; day 0 through day 60 inclusive are expiring soon; later dates are
+  valid. The model's status is replaced, even if absent or invalid.
+- A strict boolean false classification clears every other field to null. The
+  classification itself still comes from the model. Missing non-credential fields
+  can be filled with null; missing credential extraction fields are rejected.
+- Unknown fields and invalid final types are rejected without another model call.
+  Names and identifiers retain their returned punctuation. The two v01 punctuation
+  mismatches are not fixed by these rules.
+- `credential.py` shares the existing, unchanged schema checks with the evaluator.
+  The evaluator continues scoring saved final outputs exactly, with failures in
+  the denominator; it never applies extraction corrections. Schema-validation
+  failures are error objects and earn no field credit. Response metadata records
+  changed field names, without document values, when local rules modify an output.
+
+Since v01 already has correct dates and statuses, this experiment targets reliable
+rule enforcement rather than a promised sample-score increase. Use a new
+`outputs/v02-deterministic/` directory for the next user-run evaluation, compare
+against v01, and archive actual results only after review. Do not label offline
+replay of old predictions as a fresh v02 model run.
+
 ## Version and commit workflow
 
 1. Before a paid experiment, finish and verify its code change. Commit that change

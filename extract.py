@@ -1,4 +1,4 @@
-"""Credential extractor with the v01 explicit extraction contract.
+"""Credential extractor with v01 instructions and v02 deterministic output rules.
 
 Sends a license or certification document (PDF or image) to a vision model on
 OpenRouter and prints the extracted fields as JSON.
@@ -21,6 +21,8 @@ from pathlib import Path
 
 import pymupdf
 import requests
+
+from credential import FIELDS, finalize_credential
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "deepseek/deepseek-v4.1-flash"
@@ -78,9 +80,9 @@ compare expiration_date with the supplied reference date, not today's date:
 """
 
 
-def build_prompt(reference_date: str | None = None,
-                 expiring_soon_window_days: int | None = None) -> str:
-    """Build instructions using configuration only, without reading expected labels."""
+def resolve_reference(reference_date: str | None = None,
+                      expiring_soon_window_days: int | None = None) -> tuple[str, int]:
+    """Resolve and validate configuration without reading expected labels."""
     if reference_date is None or expiring_soon_window_days is None:
         reference = json.loads(REFERENCE_PATH.read_text(encoding="utf-8"))
         if reference_date is None:
@@ -94,6 +96,13 @@ def build_prompt(reference_date: str | None = None,
         raise ValueError("reference_date must be a valid YYYY-MM-DD date") from None
     if type(expiring_soon_window_days) is not int or expiring_soon_window_days < 0:
         raise ValueError("expiring_soon_window_days must be a nonnegative integer")
+    return reference_date, expiring_soon_window_days
+
+
+def build_prompt(reference_date: str | None = None,
+                 expiring_soon_window_days: int | None = None) -> str:
+    """Keep the v01 prompt unchanged while local rules enforce the same reference."""
+    reference_date, expiring_soon_window_days = resolve_reference(reference_date, expiring_soon_window_days)
     return (PROMPT + f"\nReference date: {reference_date}\n"
             f"Expiring-soon window: {expiring_soon_window_days} days\n")
 
@@ -166,6 +175,7 @@ def extract(path: Path, model: str, *, metadata: dict | None = None,
     """Return credential JSON; optionally populate a separate response-metadata dict."""
     if metadata is not None:
         metadata.clear()
+    reference_date, expiring_soon_window_days = resolve_reference(reference_date, expiring_soon_window_days)
     mime, image_b64 = load_image(path)
     response = call_model(mime, image_b64, model, reference_date=reference_date,
                           expiring_soon_window_days=expiring_soon_window_days)
@@ -173,10 +183,21 @@ def extract(path: Path, model: str, *, metadata: dict | None = None,
         # Capture accounting before parsing, even when content is malformed.
         metadata.update(response_metadata(response))
     raw = response["choices"][0]["message"]["content"]
+    if not isinstance(raw, str):
+        return {"error": "invalid model content", "details": "expected text content"}
     try:
-        return parse_json(raw)
+        prediction = parse_json(raw)
     except json.JSONDecodeError:
         return {"error": "invalid JSON from model", "raw": raw}
+    try:
+        result = finalize_credential(prediction, reference_date, expiring_soon_window_days)
+    except ValueError as exc:
+        return {"error": "invalid credential output", "details": str(exc)}
+    if metadata is not None:
+        metadata["postprocessing"] = {
+            "changed_fields": [field for field in FIELDS if field not in prediction or result[field] != prediction[field]]
+        }
+    return result
 
 
 def main() -> None:

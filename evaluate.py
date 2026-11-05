@@ -2,54 +2,12 @@
 
 import argparse
 import json
-import re
-from datetime import date
 from pathlib import Path
 
+from credential import FIELDS, STATUSES, schema_errors, valid_date
 
 ROOT = Path(__file__).resolve().parent
-FIELDS = (
-    "is_credential", "holder_name", "credential_type", "license_number",
-    "issuing_authority", "issue_date", "expiration_date", "expiration_status",
-)
-STATUSES = {"expired", "expiring_soon", "valid", "no_expiration"}
 DOCUMENT_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".webp"}
-
-
-def valid_date(value: str) -> bool:
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-        return False
-    try:
-        date.fromisoformat(value)
-    except ValueError:
-        return False
-    return True
-
-
-def schema_errors(value: object) -> dict[str, str]:
-    """Check shape and field domains; do not repair or normalize predictions."""
-    if not isinstance(value, dict):
-        return {"$": "expected a JSON object"}
-    errors = {}
-    extra = sorted(set(value) - set(FIELDS))
-    if extra:
-        errors["$"] = f"unexpected keys: {', '.join(extra)}"
-    for field in FIELDS:
-        if field not in value:
-            errors[field] = "missing field"
-            continue
-        item = value[field]
-        if field == "is_credential":
-            if type(item) is not bool:
-                errors[field] = "expected a boolean"
-        elif item is not None:
-            if not isinstance(item, str):
-                errors[field] = "expected a string or null"
-            elif field in {"issue_date", "expiration_date"} and not valid_date(item):
-                errors[field] = "expected a valid YYYY-MM-DD date or null"
-            elif field == "expiration_status" and item not in STATUSES:
-                errors[field] = "unsupported expiration status"
-    return errors
 
 
 def _unique_object(pairs: list[tuple]) -> dict:
