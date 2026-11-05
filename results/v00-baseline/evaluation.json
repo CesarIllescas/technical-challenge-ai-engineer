@@ -1,0 +1,311 @@
+{
+  "reference": {
+    "reference_date": "2026-11-01",
+    "expiring_soon_window_days": 60
+  },
+  "document_count": 8,
+  "per_field": {
+    "is_credential": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0
+    },
+    "holder_name": {
+      "correct": 3,
+      "total": 8,
+      "accuracy": 0.375
+    },
+    "credential_type": {
+      "correct": 3,
+      "total": 8,
+      "accuracy": 0.375
+    },
+    "license_number": {
+      "correct": 6,
+      "total": 8,
+      "accuracy": 0.75
+    },
+    "issuing_authority": {
+      "correct": 2,
+      "total": 8,
+      "accuracy": 0.25
+    },
+    "issue_date": {
+      "correct": 7,
+      "total": 8,
+      "accuracy": 0.875
+    },
+    "expiration_date": {
+      "correct": 1,
+      "total": 8,
+      "accuracy": 0.125
+    },
+    "expiration_status": {
+      "correct": 5,
+      "total": 8,
+      "accuracy": 0.625
+    }
+  },
+  "overall": {
+    "correct": 35,
+    "total": 64,
+    "accuracy": 0.546875
+  },
+  "schema_validity": {
+    "correct": 1,
+    "total": 8,
+    "accuracy": 0.125
+  },
+  "complete_documents": {
+    "correct": 0,
+    "total": 8,
+    "accuracy": 0.0
+  },
+  "by_expected_value": {
+    "null": {
+      "correct": 7,
+      "total": 13,
+      "accuracy": 0.5384615384615384
+    },
+    "non_null": {
+      "correct": 28,
+      "total": 51,
+      "accuracy": 0.5490196078431373
+    }
+  },
+  "ignored_prediction_files": [],
+  "documents": [
+    {
+      "document": "al_01",
+      "schema_valid": false,
+      "schema_errors": {
+        "issue_date": "expected a valid YYYY-MM-DD date or null",
+        "expiration_date": "expected a valid YYYY-MM-DD date or null"
+      },
+      "correct_fields": 5,
+      "exact_match": false,
+      "mismatches": {
+        "holder_name": {
+          "expected": "Tamsin Rae Holloway",
+          "actual": "Tamsin Rae Holloway MD",
+          "reason": "value differs"
+        },
+        "issue_date": {
+          "expected": "2012-03-14",
+          "actual": "03/14/2012",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        },
+        "expiration_date": {
+          "expected": "2027-12-31",
+          "actual": "12/31/2027",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        }
+      }
+    },
+    {
+      "document": "al_02",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 6,
+      "exact_match": false,
+      "mismatches": {
+        "holder_name": {
+          "expected": "Rafael Ignacio de la Cruz",
+          "actual": "Rafael Ignacio de la Cruz, MD",
+          "reason": "value differs"
+        },
+        "license_number": {
+          "expected": "MD.20417",
+          "actual": "MD-20417",
+          "reason": "value differs"
+        }
+      }
+    },
+    {
+      "document": "al_03",
+      "schema_valid": false,
+      "schema_errors": {
+        "expiration_date": "expected a valid YYYY-MM-DD date or null"
+      },
+      "correct_fields": 2,
+      "exact_match": false,
+      "mismatches": {
+        "holder_name": {
+          "expected": null,
+          "actual": "Prakash Venkataraman MD",
+          "reason": "value differs"
+        },
+        "credential_type": {
+          "expected": null,
+          "actual": "Medical License",
+          "reason": "value differs"
+        },
+        "license_number": {
+          "expected": null,
+          "actual": "MD.33950",
+          "reason": "value differs"
+        },
+        "issuing_authority": {
+          "expected": null,
+          "actual": "Alabama Medical Registration Commission",
+          "reason": "value differs"
+        },
+        "expiration_date": {
+          "expected": null,
+          "actual": "12/31/2026",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        },
+        "expiration_status": {
+          "expected": null,
+          "actual": "valid",
+          "reason": "value differs"
+        }
+      }
+    },
+    {
+      "document": "ny_01",
+      "schema_valid": false,
+      "schema_errors": {
+        "expiration_date": "expected a valid YYYY-MM-DD date or null"
+      },
+      "correct_fields": 5,
+      "exact_match": false,
+      "mismatches": {
+        "credential_type": {
+          "expected": "Physician",
+          "actual": "PHYSICIAN",
+          "reason": "value differs"
+        },
+        "issuing_authority": {
+          "expected": "New York State Department of Professional Registration",
+          "actual": "The State of New York Department of Professional Registration, Office of Licensed Professions",
+          "reason": "value differs"
+        },
+        "expiration_date": {
+          "expected": "2028-03-31",
+          "actual": "03/31/2028",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        }
+      }
+    },
+    {
+      "document": "ny_02",
+      "schema_valid": false,
+      "schema_errors": {
+        "expiration_date": "expected a valid YYYY-MM-DD date or null"
+      },
+      "correct_fields": 4,
+      "exact_match": false,
+      "mismatches": {
+        "credential_type": {
+          "expected": "Physician Assistant",
+          "actual": "PHYSICIAN ASSISTANT",
+          "reason": "value differs"
+        },
+        "issuing_authority": {
+          "expected": "New York State Department of Professional Registration",
+          "actual": "The State of New York Department of Professional Registration, Office of Licensed Professions",
+          "reason": "value differs"
+        },
+        "expiration_date": {
+          "expected": "2026-12-15",
+          "actual": "12/15/26",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        },
+        "expiration_status": {
+          "expected": "expiring_soon",
+          "actual": "valid",
+          "reason": "value differs"
+        }
+      }
+    },
+    {
+      "document": "tx_01",
+      "schema_valid": false,
+      "schema_errors": {
+        "expiration_date": "expected a valid YYYY-MM-DD date or null"
+      },
+      "correct_fields": 5,
+      "exact_match": false,
+      "mismatches": {
+        "holder_name": {
+          "expected": "ADRIANA LUCÍA FERRER",
+          "actual": "ADRIANA LUCÍA FERRER, MD",
+          "reason": "value differs"
+        },
+        "issuing_authority": {
+          "expected": "Texas Board of Medical Licensure",
+          "actual": "TEXAS BOARD OF MEDICAL LICENSURE",
+          "reason": "value differs"
+        },
+        "expiration_date": {
+          "expected": "2027-08-31",
+          "actual": "08/31/2027",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        }
+      }
+    },
+    {
+      "document": "tx_02",
+      "schema_valid": false,
+      "schema_errors": {
+        "expiration_date": "expected a valid YYYY-MM-DD date or null"
+      },
+      "correct_fields": 5,
+      "exact_match": false,
+      "mismatches": {
+        "credential_type": {
+          "expected": "Physician Assistant License",
+          "actual": "PHYSICIAN ASSISTANT LICENSE",
+          "reason": "value differs"
+        },
+        "issuing_authority": {
+          "expected": "Texas Physician Assistant Licensing Board",
+          "actual": "TEXAS PHYSICIAN ASSISTANT LICENSING BOARD",
+          "reason": "value differs"
+        },
+        "expiration_date": {
+          "expected": "2026-02-28",
+          "actual": "02/28/2026",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        }
+      }
+    },
+    {
+      "document": "tx_03",
+      "schema_valid": false,
+      "schema_errors": {
+        "expiration_date": "expected a valid YYYY-MM-DD date or null"
+      },
+      "correct_fields": 3,
+      "exact_match": false,
+      "mismatches": {
+        "holder_name": {
+          "expected": "ROBERT ALAN MITCHELL JR.",
+          "actual": "ROBERT ALAN MITCHELL JR., DO",
+          "reason": "value differs"
+        },
+        "credential_type": {
+          "expected": "Physician License",
+          "actual": "PHYSICIAN LICENSE",
+          "reason": "value differs"
+        },
+        "issuing_authority": {
+          "expected": "Texas Board of Medical Licensure",
+          "actual": "TEXAS BOARD OF MEDICAL LICENSURE",
+          "reason": "value differs"
+        },
+        "expiration_date": {
+          "expected": "2026-11-30",
+          "actual": "11/30/2026",
+          "reason": "expected a valid YYYY-MM-DD date or null"
+        },
+        "expiration_status": {
+          "expected": "expiring_soon",
+          "actual": "valid",
+          "reason": "value differs"
+        }
+      }
+    }
+  ]
+}

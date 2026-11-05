@@ -1,0 +1,83 @@
+{
+  "started_at_utc": "2026-11-05T19:28:49.167673+00:00",
+  "finished_at_utc": "2026-11-05T19:29:59.802625+00:00",
+  "model_requested": "deepseek/deepseek-v4.1-flash",
+  "model_reported": null,
+  "python_version": "3.13.5",
+  "package_versions": {
+    "pymupdf": "2.1",
+    "requests": "2.34.2"
+  },
+  "sha256": {
+    "extract.py": "4940e34b94b3ac455d26e40e1e57cd21628aadd3efd9961ab64c8d1a8d7ca2d5",
+    "evaluate.py": "46d8bf9d7db83b7c042570a0f82b0eb2f0a70275833e211a62b2afecad75d93f",
+    "run_baseline.py": "576a2178c31f9f7422af01c97e20ebc1ec091c8f6003f11e1f47607a4059f125",
+    "expected/_reference.json": "9bb4945c0a88f6b33b8cb66f4a333c2bd938b4ae8508ab742d19f5ce9ccfa262",
+    "expected/al_01.json": "a7affc9400d45644ef8d2ca9bdb8754806f6e654a5debe6632b19036b33eee7a",
+    "expected/al_02.json": "0054fa7c8665581cf021b6d4e30e44f86d21f8cd64eb277f7d58ef73999ed61c",
+    "expected/al_03.json": "7dc6615dc52dc1aa431148b8292e5b9a37ff327c997a01b756a31fb619d45848",
+    "expected/ny_01.json": "02a10a770e021f4fa1c271f278ed3709fdeabfeeadea42ae4363e960c60281ed",
+    "expected/ny_02.json": "e22f343cadccd7f674ece1e212366c9837a8d8a88f8fa15f9dd7e8a43f835363",
+    "expected/tx_01.json": "24df88b6d9184822695c257dcd247cf1282603cad8aefb157b651b8b714d7d1a",
+    "expected/tx_02.json": "79038efe8c5a816f8d5c4450cb4dcd8552974df4cd6036863adf04b6a4abfcb2",
+    "expected/tx_03.json": "2ae17cc3bd0aab0ed762ab5b8ad0768bce65121772da1807cfe12fe93aaa982f",
+    "docs/al_01.pdf": "6a5ed01120cba048ad210141594e5a802a8a44f19ee64a86e9170464d68a1ac0",
+    "docs/al_02.pdf": "883e63282c931ae952907cca42497116db3c353127ddf79f6c3e7d3e928f56ad",
+    "docs/al_03.pdf": "0a0996ddbe81c606333bdcd1c8311e37b9e0e73ad4560f538daec137654ad943",
+    "docs/ny_01.pdf": "1292afb46ce6c2461642d3c76498b6f64c0ad3dc392f180f37efb632b3d8b73c",
+    "docs/ny_02.pdf": "0962dc23f4a8eee1402650238805f8e7e19d393092c1bd8b05260fc7d27dcb1d",
+    "docs/tx_01.pdf": "6fe72ad295cc6d53c6e8d0ee0b101d28f29bb4b6b99727b1e4e6822aa66ca7ca",
+    "docs/tx_02.pdf": "86e39d512afb2507e8327f5223b5d3f32053db77f7312ed8754672a31c06bc44",
+    "docs/tx_03.pdf": "74a3a847b654fbe27cd284df3c4d66a0630661c320f7cd59448537872a342c37"
+  },
+  "evaluation_reference": {
+    "reference_date": "2026-11-01",
+    "expiring_soon_window_days": 60
+  },
+  "reference_applied_to_extractor": false,
+  "usage": null,
+  "cost_usd": null,
+  "cost_note": "The starter does not expose usage or cost; obtain evidence from OpenRouter separately.",
+  "documents": [
+    {
+      "document": "al_01",
+      "status": "returned_output",
+      "elapsed_seconds": 5.0518
+    },
+    {
+      "document": "al_02",
+      "status": "returned_output",
+      "elapsed_seconds": 2.2449
+    },
+    {
+      "document": "al_03",
+      "status": "returned_output",
+      "elapsed_seconds": 25.0048
+    },
+    {
+      "document": "ny_01",
+      "status": "returned_output",
+      "elapsed_seconds": 6.2593
+    },
+    {
+      "document": "ny_02",
+      "status": "returned_output",
+      "elapsed_seconds": 6.5472
+    },
+    {
+      "document": "tx_01",
+      "status": "returned_output",
+      "elapsed_seconds": 14.9278
+    },
+    {
+      "document": "tx_02",
+      "status": "returned_output",
+      "elapsed_seconds": 4.5759
+    },
+    {
+      "document": "tx_03",
+      "status": "returned_output",
+      "elapsed_seconds": 6.0107
+    }
+  ]
+}
