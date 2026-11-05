@@ -104,6 +104,7 @@ class ExtractionMetadataTests(unittest.TestCase):
             "created": 1793900000, "finish_reason": "stop", "native_finish_reason": "stop",
             "usage": self.payload["usage"],
             "postprocessing": {"changed_fields": list(FIELDS[1:])},
+            "preprocessing": {},
         })
         serialized = json.dumps(metadata)
         self.assertNotIn("private model reasoning", serialized)
@@ -141,7 +142,7 @@ class ExtractionMetadataTests(unittest.TestCase):
         metadata = {"stale": "must be cleared"}
         with self.assertRaises(extract.requests.HTTPError):
             extract.extract(Path("synthetic.pdf"), "test/requested", metadata=metadata)
-        self.assertEqual(metadata, {})
+        self.assertEqual(metadata, {"preprocessing": {}})
         self.post.assert_called_once()
         self.response.json.assert_not_called()
 
