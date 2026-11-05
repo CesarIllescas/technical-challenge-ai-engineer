@@ -4,9 +4,9 @@ import argparse
 import json
 from pathlib import Path
 
-from credential import FIELDS, STATUSES, schema_errors, valid_date
+from scripts.credential import FIELDS, STATUSES, schema_errors, valid_date
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 DOCUMENT_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".webp"}
 
 

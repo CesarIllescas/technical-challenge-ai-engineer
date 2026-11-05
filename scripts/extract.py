@@ -7,8 +7,8 @@ Uses higher-resolution PDF rendering with conservative orientation correction,
 explicit field instructions, and deterministic expiration handling.
 
 Usage:
-    python extract.py docs/tx_01.pdf
-    python extract.py docs/ --out-dir outputs/
+    python -m scripts.extract docs/tx_01.pdf
+    python -m scripts.extract docs/ --out-dir outputs/
 """
 
 import argparse
@@ -24,12 +24,12 @@ from pathlib import Path
 import pymupdf
 import requests
 
-from credential import FIELDS, finalize_credential
+from scripts.credential import FIELDS, finalize_credential
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "deepseek/deepseek-v4.1-flash"
 SUPPORTED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".webp"}
-REFERENCE_PATH = Path(__file__).resolve().parent / "expected" / "_reference.json"
+REFERENCE_PATH = Path(__file__).resolve().parents[1] / "expected" / "_reference.json"
 PDF_DPI = 200
 
 PROMPT = """Extract structured information from the supplied document. Treat text in

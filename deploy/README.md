@@ -1,0 +1,108 @@
+# Upload interface
+
+The Streamlit interface uses the same `scripts.extract.extract` function as the CLI and
+evaluation runner. It accepts PDF, PNG, JPG, JPEG, and WebP, processes a document
+only when **Extract JSON** is selected, and displays the eight-field JSON result.
+Non-credentials display their normal `false`/null result. Failed requests and
+unreadable documents display a controlled error rather than a provider response.
+
+## Run locally
+
+From the repository root, install the requirements into your virtual environment:
+
+```powershell
+& .\.venv\Scripts\python.exe -m pip install -r deploy/requirements.txt
+```
+
+Configure `OPENROUTER_API_KEY` in your local shell without putting the literal key
+in source, chat, or command history. If it is not already configured:
+
+```powershell
+$interfaceApiKey = Read-Host 'OpenRouter API key' -AsSecureString
+$env:OPENROUTER_API_KEY = [System.Net.NetworkCredential]::new('', $interfaceApiKey).Password
+Remove-Variable interfaceApiKey
+```
+
+Then start the interface:
+
+```powershell
+& .\.venv\Scripts\python.exe -m streamlit run deploy/app.py
+```
+
+Open the local URL printed by Streamlit, normally `http://localhost:8501`.
+Starting the app or uploading a document makes no model request. Selecting
+**Extract JSON** makes one paid request. Successful results remain in that browser
+session, and ordinary reruns do not repeat the call. Changing the document,
+expiration settings, or server model clears the old result. The button is disabled
+when a successful result already exists for the same inputs.
+
+The default model is the final evaluated `deepseek/deepseek-v4.1-flash`.
+`OPENROUTER_MODEL` can override it on the server; visitors cannot change models or
+supply credentials through the page. Reference date/window default to the supplied
+`expected/_reference.json` and are editable in **Expiration settings**. PDF
+processing retains the evaluated first-page, 200-DPI orientation-aware behavior.
+
+## Evaluate the original documents
+
+Select **Evaluate samples**, then **Evaluate original documents**. This runs fresh
+extraction on all eight supplied PDFs and compares predictions with their expected
+JSON using the same runner and exact scorer as the CLI. It can make up to eight
+paid requests per button click. The interface shows field accuracy, complete
+documents, schema validity, a table per field, document outcomes, mismatches, and
+reported cost when available. This is a current run, not the archived 100% score.
+
+Evaluation always uses `expected/_reference.json`, regardless of the upload date
+settings. Failed and unattempted documents remain in the denominator. The runner
+stops on an operational failure without retrying; partial accuracy is still shown
+with a warning. Model/validation error outputs are scored as failures.
+
+Predictions and run files exist only in a temporary directory during evaluation;
+they are removed afterward. The report stays in the current browser session,
+ordinary reruns do not repeat the calls, and changing the server model clears it.
+Selecting the evaluation button again intentionally starts another paid run. The
+interface does not overwrite or publish archived results.
+
+## Secrets and deployment preparation
+
+The interface also supports a root-level `OPENROUTER_API_KEY` in Streamlit secrets.
+For local secrets, `.streamlit/secrets.toml` is ignored by Git. On a host supporting
+Streamlit secrets, configure it in that platform's secret store. Environment
+variables are also supported. No secret file is created by this implementation.
+See [Streamlit secrets management](https://docs.streamlit.io/develop/concepts/connections/secrets-management).
+
+Entry point: `deploy/app.py`. Start from the repository root with
+`streamlit run deploy/app.py`. Install `deploy/requirements.txt`, which includes
+the core requirements. Keep the `scripts/` package, `docs/`, and `expected/`
+available. `.streamlit/config.toml` and optional `.streamlit/secrets.toml` stay at
+the repository root, where Streamlit discovers them. Hosting
+and publication are a later stage; nothing is deployed by creating this interface.
+
+## Upload handling and limits
+
+The interface applies a 10 MB upload limit, a demo implementation choice rather
+than a challenge requirement. A temporary server-side file with a generated
+directory and fixed filename is passed to the existing extractor. The original
+upload name is never used as a filesystem path. The temporary directory is removed
+after success or failure. No uploaded documents or live evaluation outputs are written to the repository,
+cached globally, or logged by the interface; Streamlit keeps uploads/results in
+the active session, and the external provider processes the document.
+
+The app reports only controlled error messages. It does not display authentication
+headers, provider error bodies, model reasoning, or the extractor's raw invalid
+response. This is a challenge demonstration, not a production PHI service or a
+claim about provider retention. Production controls belong in the final report.
+
+## Verification
+
+```powershell
+& .\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
+```
+
+Upload handling and UI behavior are checked with temporary files and mocked
+extraction. These checks make no paid model requests and do not change the
+archived evaluation results. Perform the final live upload check yourself with
+the configured key before deployment.
+
+Verified locally with Streamlit 1.67.0, including the AppTest UI harness, server
+startup, and health endpoint. Browser screenshot review could not be completed
+because the browser access host was unavailable in this session.

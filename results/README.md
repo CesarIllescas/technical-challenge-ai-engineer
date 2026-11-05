@@ -101,7 +101,7 @@ byte-for-byte copies of that run, without rewriting its metadata or predictions.
 Re-score the final saved predictions without API requests or overwriting evidence:
 
 ```powershell
-& .\.venv\Scripts\python.exe -B evaluate.py --predictions results/v02-image-quality/predictions
+& .\.venv\Scripts\python.exe -B -m scripts.evaluate --predictions results/v02-image-quality/predictions
 ```
 
 The saved report reproduces exactly: 64/64 fields, 8/8 valid schemas, and 8/8 complete

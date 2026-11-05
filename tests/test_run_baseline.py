@@ -8,8 +8,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from evaluate import DOCUMENT_EXTENSIONS, ROOT, load_fixtures
-from run_baseline import run_baseline
+from scripts.evaluate import DOCUMENT_EXTENSIONS, ROOT, load_fixtures
+from scripts.run_baseline import run_baseline
 
 
 class BaselineRunnerTests(unittest.TestCase):
@@ -22,7 +22,7 @@ class BaselineRunnerTests(unittest.TestCase):
         self.fake.DEFAULT_MODEL = "test/default"
         self.fake.SUPPORTED_EXTENSIONS = DOCUMENT_EXTENSIONS
         self.fake.extract = Mock(side_effect=lambda path, model, **kwargs: self.labels[path.stem])
-        self.module_patch = patch.dict("sys.modules", {"extract": self.fake})
+        self.module_patch = patch("scripts.extract", self.fake)
         self.module_patch.start()
         self.addCleanup(self.module_patch.stop)
         self.env_patch = patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-placeholder"}, clear=True)
@@ -41,7 +41,7 @@ class BaselineRunnerTests(unittest.TestCase):
         self.assertIsNone(metadata["usage"])
         self.assertEqual(metadata["cost_reported_documents"], 0)
         self.assertIsNone(metadata["reported_cost_usd"])
-        self.assertIn("extract.py", metadata["sha256"])
+        self.assertIn("scripts/extract.py", metadata["sha256"])
         self.assertIn("docs/tx_01.pdf", metadata["sha256"])
         self.assertTrue(all(row["status"] == "returned_output" for row in metadata["documents"]))
         self.assertTrue(all(row["elapsed_seconds"] >= 0 for row in metadata["documents"]))
@@ -96,6 +96,13 @@ class BaselineRunnerTests(unittest.TestCase):
     def test_model_environment_override(self):
         with patch.dict(os.environ, {"OPENROUTER_MODEL": "test/environment"}):
             self.assertEqual(run_baseline(self.run_dir)["model_requested"], "test/environment")
+
+    def test_quiet_mode_retains_outputs_without_printing_document_data(self):
+        with patch("sys.stdout") as stdout:
+            metadata = run_baseline(self.run_dir, verbose=False)
+        stdout.write.assert_not_called()
+        self.assertEqual(len(metadata["documents"]), 8)
+        self.assertTrue((self.run_dir / "evaluation.json").is_file())
 
     def test_aggregates_response_costs_and_native_token_counts(self):
         def extract(path, model, *, metadata, **kwargs):

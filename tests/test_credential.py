@@ -2,7 +2,7 @@
 
 import unittest
 
-from credential import FIELDS, finalize_credential, normalize_date, schema_errors
+from scripts.credential import FIELDS, finalize_credential, normalize_date, schema_errors
 
 
 def credential(**changes):

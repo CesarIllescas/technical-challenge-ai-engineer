@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evaluate import ROOT, evaluate, load_fixtures
+from scripts.evaluate import ROOT, evaluate, load_fixtures
 
 
 class EvaluationTests(unittest.TestCase):
@@ -126,7 +126,7 @@ class EvaluationTests(unittest.TestCase):
     def test_cli_writes_report_and_rejects_missing_directory(self):
         report_path = self.predictions / "reports" / "score.json"
         result = subprocess.run(
-            [sys.executable, "-B", str(ROOT / "evaluate.py"), "--predictions",
+            [sys.executable, "-B", "-m", "scripts.evaluate", "--predictions",
              str(self.predictions), "--report", str(report_path)],
             capture_output=True, text=True, encoding="utf-8",
         )
@@ -134,7 +134,7 @@ class EvaluationTests(unittest.TestCase):
         self.assertIn("64/64", result.stdout)
         self.assertEqual(json.loads(report_path.read_text(encoding="utf-8"))["overall"]["correct"], 64)
         result = subprocess.run(
-            [sys.executable, "-B", str(ROOT / "evaluate.py"), "--predictions",
+            [sys.executable, "-B", "-m", "scripts.evaluate", "--predictions",
              str(self.predictions / "missing")], capture_output=True, text=True,
         )
         self.assertEqual(result.returncode, 2)

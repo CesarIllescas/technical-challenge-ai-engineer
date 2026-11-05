@@ -8,7 +8,7 @@ from unittest.mock import Mock
 
 import pymupdf
 
-from extract import load_image, rotation_to_upright
+from scripts.extract import load_image, rotation_to_upright
 
 
 TEXT = "SYNTHETIC CREDENTIAL HOLDER NAME AND LICENSE NUMBER 00123 FOR INDEPENDENT TESTING ONLY"

@@ -8,8 +8,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import extract
-from credential import FIELDS
+from scripts import extract
+from scripts.credential import FIELDS
 
 
 NON_CREDENTIAL = {field: False if field == "is_credential" else None for field in FIELDS}

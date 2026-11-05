@@ -13,7 +13,7 @@ Your task is to build a credential extractor. Given a license or certification d
 - **8 sample documents** of medical licenses or certifications (image or PDF) in [`docs/`](docs/).
 - **An expected-output JSON for each document** in [`expected/`](expected/), so you can measure accuracy.
 - **A reference date** for computing `expiration_status`: `2026-11-01`, with a 60-day `expiring_soon` window. Both are in [`expected/_reference.json`](expected/_reference.json).
-- **A base Python script**, [`extract.py`](extract.py), with a basic prompt that extracts the fields at around 60% accuracy. This is your starting point.
+- **A base Python script**, [`scripts/extract.py`](scripts/extract.py), with a basic prompt that extracts the fields at around 60% accuracy. This is your starting point.
 - **An OpenRouter API key issued only to you**, with a $5 USD credit limit. That is enough for this challenge if you choose models with care. We can see usage, so your model choices and spend are part of the picture. If you run out of credit, write to us before continuing.
 
 Some documents are deliberately tricky: dates in different formats, a license with no expiration date, and a document that is not a license at all.
@@ -93,12 +93,45 @@ pip install -r requirements.txt
 export OPENROUTER_API_KEY=sk-or-...   # the key we sent you
 
 # One document
-python extract.py docs/tx_01.pdf
+python -m scripts.extract docs/tx_01.pdf
 
 # Every document in a folder, one JSON file per document
-python extract.py docs/ --out-dir outputs/
+python -m scripts.extract docs/ --out-dir outputs/
 ```
 
 The base script uses `deepseek/deepseek-v4.1-flash` by default. Use `--model` or `OPENROUTER_MODEL` to try a different OpenRouter model.
 
 The base script is intentionally simple. Everything in it is fair game to change.
+
+## Current project layout
+
+- `scripts/`: credential rules, extractor, offline evaluator, and evaluation runner.
+- `deploy/`: Streamlit entry point, upload/evaluation adapters, UI dependencies, and setup guide.
+- `.streamlit/`: framework configuration, kept at the repository root for Streamlit discovery.
+- `docs/` and `expected/`: original documents, labels, and reference configuration.
+- `results/`: selected evaluation evidence; `tests/`: offline checks.
+
+Run the following commands from the repository root:
+
+```bash
+# Interface dependencies include the core requirements
+pip install -r deploy/requirements.txt
+python -m streamlit run deploy/app.py
+
+# CLI extraction (paid request)
+python -m scripts.extract docs/tx_01.pdf
+
+# Score saved predictions without an API request
+python -m scripts.evaluate --predictions results/v02-image-quality/predictions
+
+# Run a new evaluation (paid requests; directory must be new)
+python -m scripts.run_baseline --run-dir outputs/new-run
+
+# All tests use mocked model calls
+python -B -m unittest discover -s tests -v
+```
+
+See [deployment and interface setup](deploy/README.md) for server secrets and the
+**Evaluate samples** tab, which runs fresh extraction on the original documents
+and displays the shared evaluator's accuracy report. No model requests occur
+until an extraction or evaluation button is explicitly selected.

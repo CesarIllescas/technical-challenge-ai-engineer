@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
 
-from evaluate import ROOT, evaluate, load_fixtures, print_report
+from scripts.evaluate import ROOT, evaluate, load_fixtures, print_report
 
 
 def write_json(path: Path, value: object) -> None:
@@ -53,9 +53,9 @@ def update_accounting(metadata: dict) -> None:
     )
 
 
-def run_baseline(run_dir: Path, model: str | None = None) -> dict:
+def run_baseline(run_dir: Path, model: str | None = None, *, verbose: bool = True) -> dict:
     # Import lazily so --help does not load model dependencies or read credentials.
-    import extract as baseline
+    from scripts import extract as baseline
 
     expected, reference = load_fixtures(ROOT / "docs", ROOT / "expected")
     if not os.environ.get("OPENROUTER_API_KEY"):
@@ -71,7 +71,8 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
         if path.is_file() and path.stem in expected
         and path.suffix.lower() in baseline.SUPPORTED_EXTENSIONS
     )
-    provenance_files = [ROOT / "extract.py", ROOT / "credential.py", ROOT / "evaluate.py", ROOT / "run_baseline.py"]
+    provenance_files = [ROOT / "scripts" / name for name in
+                        ("__init__.py", "extract.py", "credential.py", "evaluate.py", "run_baseline.py")]
     provenance_files += sorted((ROOT / "expected").glob("*.json")) + documents
     versions = {}
     for package in ("pymupdf", "requests"):
@@ -112,7 +113,8 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
         record["status"] = "in_progress"
         record["response"] = {}
         write_json(metadata_path, metadata)
-        print(f"Extracting {path.name} with {model}...", flush=True)
+        if verbose:
+            print(f"Extracting {path.name} with {model}...", flush=True)
         started = perf_counter()
         try:
             prediction = baseline.extract(path, model, metadata=record["response"],
@@ -124,8 +126,9 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
             response = getattr(exc, "response", None)
             record["http_status"] = getattr(response, "status_code", None)
             # Exception text and HTTP bodies may contain sensitive material.
-            print(f"Stopped at {path.name}: {record['error_type']}; "
-                  f"HTTP status={record['http_status']}. No automatic retry.")
+            if verbose:
+                print(f"Stopped at {path.name}: {record['error_type']}; "
+                      f"HTTP status={record['http_status']}. No automatic retry.")
             break
         else:
             # Evaluate the final extractor output, including validation-error objects.
@@ -139,8 +142,9 @@ def run_baseline(run_dir: Path, model: str | None = None) -> dict:
     write_json(metadata_path, metadata)
     report = evaluate(predictions_dir)
     write_json(run_dir / "evaluation.json", report)
-    print_report(report)
-    print(f"\nSaved outputs and run evidence in {run_dir}")
+    if verbose:
+        print_report(report)
+        print(f"\nSaved outputs and run evidence in {run_dir}")
     return metadata
 
 
