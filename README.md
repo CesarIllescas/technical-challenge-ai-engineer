@@ -105,6 +105,12 @@ The base script is intentionally simple. Everything in it is fair game to change
 
 ## Current project layout
 
+The [technical report](REPORT.md) explains the v00 failures, improvements through
+v02, model selection, measured cost per document, evaluation limits, and proposed
+production controls for sensitive data. See [evaluation results](results/README.md)
+for the saved measurements and provenance, [BASELINE.md](BASELINE.md) for running
+experiments, and [EVALUATION.md](EVALUATION.md) for the scoring contract.
+
 - `scripts/`: credential rules, extractor, offline evaluator, and evaluation runner.
 - `deploy/`: Streamlit entry point, upload/evaluation adapters, UI dependencies, and setup guide.
 - `.streamlit/`: framework configuration, kept at the repository root for Streamlit discovery.
