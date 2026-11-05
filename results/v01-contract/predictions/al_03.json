@@ -1,0 +1,10 @@
+{
+  "is_credential": false,
+  "holder_name": null,
+  "credential_type": null,
+  "license_number": null,
+  "issuing_authority": null,
+  "issue_date": null,
+  "expiration_date": null,
+  "expiration_status": null
+}

@@ -1,0 +1,155 @@
+{
+  "reference": {
+    "reference_date": "2026-11-01",
+    "expiring_soon_window_days": 60
+  },
+  "document_count": 8,
+  "per_field": {
+    "is_credential": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0
+    },
+    "holder_name": {
+      "correct": 7,
+      "total": 8,
+      "accuracy": 0.875
+    },
+    "credential_type": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0
+    },
+    "license_number": {
+      "correct": 7,
+      "total": 8,
+      "accuracy": 0.875
+    },
+    "issuing_authority": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0
+    },
+    "issue_date": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0
+    },
+    "expiration_date": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0
+    },
+    "expiration_status": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0
+    }
+  },
+  "overall": {
+    "correct": 62,
+    "total": 64,
+    "accuracy": 0.96875
+  },
+  "schema_validity": {
+    "correct": 8,
+    "total": 8,
+    "accuracy": 1.0
+  },
+  "complete_documents": {
+    "correct": 6,
+    "total": 8,
+    "accuracy": 0.75
+  },
+  "by_expected_value": {
+    "null": {
+      "correct": 13,
+      "total": 13,
+      "accuracy": 1.0
+    },
+    "non_null": {
+      "correct": 49,
+      "total": 51,
+      "accuracy": 0.9607843137254902
+    }
+  },
+  "ignored_prediction_files": [],
+  "documents": [
+    {
+      "document": "al_01",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 8,
+      "exact_match": true,
+      "mismatches": {}
+    },
+    {
+      "document": "al_02",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 7,
+      "exact_match": false,
+      "mismatches": {
+        "license_number": {
+          "expected": "MD.20417",
+          "actual": "MD-20417",
+          "reason": "value differs"
+        }
+      }
+    },
+    {
+      "document": "al_03",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 8,
+      "exact_match": true,
+      "mismatches": {}
+    },
+    {
+      "document": "ny_01",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 8,
+      "exact_match": true,
+      "mismatches": {}
+    },
+    {
+      "document": "ny_02",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 8,
+      "exact_match": true,
+      "mismatches": {}
+    },
+    {
+      "document": "tx_01",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 8,
+      "exact_match": true,
+      "mismatches": {}
+    },
+    {
+      "document": "tx_02",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 8,
+      "exact_match": true,
+      "mismatches": {}
+    },
+    {
+      "document": "tx_03",
+      "schema_valid": true,
+      "schema_errors": {},
+      "correct_fields": 7,
+      "exact_match": false,
+      "mismatches": {
+        "holder_name": {
+          "expected": "ROBERT ALAN MITCHELL JR.",
+          "actual": "ROBERT ALAN MITCHELL JR",
+          "reason": "value differs"
+        }
+      }
+    }
+  ]
+}
