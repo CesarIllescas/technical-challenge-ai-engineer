@@ -165,6 +165,27 @@ runs, and evaluate independent documents covering different issuers, scans,
 orientations, missing fields, and ambiguous dates. First-page processing and
 orientation correction without an OCR fallback are also current limitations.
 
+### Known limitation: multi-page PDFs
+
+The extractor currently processes only the first PDF page. This behavior was
+inherited from the starter implementation; the challenge does not restrict
+documents to one page. The supplied `tx_01.pdf`, `tx_02.pdf`, and `tx_03.pdf` each
+contain two pages, so their second pages are not considered. Relevant fields or
+qualifying information on later pages could therefore be missed. The reported
+100% sample score does not demonstrate complete-document processing.
+
+A proposed follow-up is to render every page with independent orientation
+correction and send the ordered page images together for one document-level
+extraction, subject to verified model/provider limits. Documents exceeding those
+limits should produce an explicit failure rather than silent truncation. The
+eight-field schema represents one credential; handling PDFs containing multiple
+distinct credentials would require a separate decision rather than merging them.
+
+This change is deferred and has not been implemented. It would require checks
+for page order, later-page information, and failure without partial extraction,
+followed by fresh accuracy and cost measurements. The archived v02 results and
+cost estimate describe the existing first-page implementation.
+
 ## Taking the demonstration to production with real data
 
 The current solution is designed as a technical demonstration using the provided
