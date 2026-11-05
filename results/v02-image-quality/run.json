@@ -1,0 +1,430 @@
+{
+  "started_at_utc": "2026-11-05T21:27:59.910874+00:00",
+  "finished_at_utc": "2026-11-05T21:28:55.808071+00:00",
+  "model_requested": "deepseek/deepseek-v4.1-flash",
+  "models_reported": [
+    "deepseek/deepseek-v4.1-flash"
+  ],
+  "python_version": "3.13.5",
+  "package_versions": {
+    "pymupdf": "2.1",
+    "requests": "2.34.2"
+  },
+  "sha256": {
+    "extract.py": "ce8955b80072172a87b8954a61e751e5be192c6ee03a219abe4e4b929e204273",
+    "credential.py": "2404f88cb3b9071a13d02c9b284cdaef5402d92da6ae95c68492f5703a961803",
+    "evaluate.py": "714faf20a0a980ab208915b0ca0a315b59abfb845afe319e280322b0385b0b44",
+    "run_baseline.py": "a4227df780134c7ff64bee79cc1bd09e89649839d37836e45b66aca82c98e12f",
+    "expected/_reference.json": "9bb4945c0a88f6b33b8cb66f4a333c2bd938b4ae8508ab742d19f5ce9ccfa262",
+    "expected/al_01.json": "a7affc9400d45644ef8d2ca9bdb8754806f6e654a5debe6632b19036b33eee7a",
+    "expected/al_02.json": "0054fa7c8665581cf021b6d4e30e44f86d21f8cd64eb277f7d58ef73999ed61c",
+    "expected/al_03.json": "7dc6615dc52dc1aa431148b8292e5b9a37ff327c997a01b756a31fb619d45848",
+    "expected/ny_01.json": "02a10a770e021f4fa1c271f278ed3709fdeabfeeadea42ae4363e960c60281ed",
+    "expected/ny_02.json": "e22f343cadccd7f674ece1e212366c9837a8d8a88f8fa15f9dd7e8a43f835363",
+    "expected/tx_01.json": "24df88b6d9184822695c257dcd247cf1282603cad8aefb157b651b8b714d7d1a",
+    "expected/tx_02.json": "79038efe8c5a816f8d5c4450cb4dcd8552974df4cd6036863adf04b6a4abfcb2",
+    "expected/tx_03.json": "2ae17cc3bd0aab0ed762ab5b8ad0768bce65121772da1807cfe12fe93aaa982f",
+    "docs/al_01.pdf": "6a5ed01120cba048ad210141594e5a802a8a44f19ee64a86e9170464d68a1ac0",
+    "docs/al_02.pdf": "883e63282c931ae952907cca42497116db3c353127ddf79f6c3e7d3e928f56ad",
+    "docs/al_03.pdf": "0a0996ddbe81c606333bdcd1c8311e37b9e0e73ad4560f538daec137654ad943",
+    "docs/ny_01.pdf": "1292afb46ce6c2461642d3c76498b6f64c0ad3dc392f180f37efb632b3d8b73c",
+    "docs/ny_02.pdf": "0962dc23f4a8eee1402650238805f8e7e19d393092c1bd8b05260fc7d27dcb1d",
+    "docs/tx_01.pdf": "6fe72ad295cc6d53c6e8d0ee0b101d28f29bb4b6b99727b1e4e6822aa66ca7ca",
+    "docs/tx_02.pdf": "86e39d512afb2507e8327f5223b5d3f32053db77f7312ed8754672a31c06bc44",
+    "docs/tx_03.pdf": "74a3a847b654fbe27cd284df3c4d66a0630661c320f7cd59448537872a342c37"
+  },
+  "evaluation_reference": {
+    "reference_date": "2026-11-01",
+    "expiring_soon_window_days": 60
+  },
+  "reference_applied_to_extractor": true,
+  "usage": {
+    "prompt_tokens": 13961,
+    "completion_tokens": 12519,
+    "total_tokens": 26480
+  },
+  "cost_usd": 0.0137992,
+  "cost_note": "Source: response usage.cost (USD-denominated OpenRouter credits). Run totals require reporting for every scheduled document; reported_cost_usd includes only known costs. Failed requests may incur unknown charges.",
+  "documents": [
+    {
+      "document": "al_01",
+      "status": "returned_output",
+      "elapsed_seconds": 5.6976,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 0,
+          "width_px": 1700,
+          "height_px": 2145
+        },
+        "response_id": "gen-1793914080-AiPrd9J0Yf3ojZG6lzdS",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "Cohere",
+        "created": 1793914080,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1718,
+          "completion_tokens": 1367,
+          "total_tokens": 3085,
+          "cost": 0.0021558,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.0021558,
+            "upstream_inference_prompt_cost": 0.0005154,
+            "upstream_inference_completions_cost": 0.0016404
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1292,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    },
+    {
+      "document": "al_02",
+      "status": "returned_output",
+      "elapsed_seconds": 2.8984,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 0,
+          "width_px": 1700,
+          "height_px": 2100
+        },
+        "response_id": "gen-1793914086-Qbn5j1uUa0S5h5tKH94O",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "DeepInfra",
+        "created": 1793914086,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1752,
+          "completion_tokens": 325,
+          "total_tokens": 2077,
+          "cost": 0.00038178,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.00038178,
+            "upstream_inference_prompt_cost": 0.00024528,
+            "upstream_inference_completions_cost": 0.0001365
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 250,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    },
+    {
+      "document": "al_03",
+      "status": "returned_output",
+      "elapsed_seconds": 1.879,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 0,
+          "width_px": 1700,
+          "height_px": 2167
+        },
+        "response_id": "gen-1793914089-Ft2wvoEXOkesJjAsFthL",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "CoreWeave",
+        "created": 1793914089,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1746,
+          "completion_tokens": 138,
+          "total_tokens": 1884,
+          "cost": 0.00023476,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 640,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.00023476,
+            "upstream_inference_prompt_cost": 0.00014506,
+            "upstream_inference_completions_cost": 8.97e-05
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 92,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    },
+    {
+      "document": "ny_01",
+      "status": "returned_output",
+      "elapsed_seconds": 12.6618,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 0,
+          "width_px": 1700,
+          "height_px": 2128
+        },
+        "response_id": "gen-1793914091-3GDHy80nKKBZMJYN0UP9",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "Together",
+        "created": 1793914091,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1783,
+          "completion_tokens": 4420,
+          "total_tokens": 6203,
+          "cost": 0.0058389,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.0058389,
+            "upstream_inference_prompt_cost": 0.0005349,
+            "upstream_inference_completions_cost": 0.005304
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 4346,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    },
+    {
+      "document": "ny_02",
+      "status": "returned_output",
+      "elapsed_seconds": 18.1508,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 0,
+          "width_px": 1700,
+          "height_px": 2200
+        },
+        "response_id": "gen-1793914104-KwAYONtwRA8up7cLuLBb",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "CoreWeave",
+        "created": 1793914104,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1746,
+          "completion_tokens": 4404,
+          "total_tokens": 6150,
+          "cost": 0.00308958,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.00308958,
+            "upstream_inference_prompt_cost": 0.00022698,
+            "upstream_inference_completions_cost": 0.0028626
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 4322,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    },
+    {
+      "document": "tx_01",
+      "status": "returned_output",
+      "elapsed_seconds": 2.7986,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 90,
+          "width_px": 2184,
+          "height_px": 1700
+        },
+        "response_id": "gen-1793914122-jI8INfTDYeeSw450z3Oy",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "Together",
+        "created": 1793914122,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1740,
+          "completion_tokens": 411,
+          "total_tokens": 2151,
+          "cost": 0.0010152,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.0010152,
+            "upstream_inference_prompt_cost": 0.000522,
+            "upstream_inference_completions_cost": 0.0004932
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 338,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    },
+    {
+      "document": "tx_02",
+      "status": "returned_output",
+      "elapsed_seconds": 4.0376,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 90,
+          "width_px": 2200,
+          "height_px": 1684
+        },
+        "response_id": "gen-1793914124-XPoKNmBK9SzJqA5XtyiF",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "Wafer",
+        "created": 1793914124,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1738,
+          "completion_tokens": 561,
+          "total_tokens": 2299,
+          "cost": 0.00035871,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.00035871,
+            "upstream_inference_prompt_cost": 7.821e-05,
+            "upstream_inference_completions_cost": 0.0002805
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 492,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    },
+    {
+      "document": "tx_03",
+      "status": "returned_output",
+      "elapsed_seconds": 7.7622,
+      "response": {
+        "preprocessing": {
+          "format": "pdf",
+          "page": 1,
+          "dpi": 200,
+          "rotation_degrees": 270,
+          "width_px": 2173,
+          "height_px": 1700
+        },
+        "response_id": "gen-1793914129-IHmEY0VnlYXnDdZhv5KF",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "provider": "CoreWeave",
+        "created": 1793914129,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1738,
+          "completion_tokens": 893,
+          "total_tokens": 2631,
+          "cost": 0.00072447,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 640,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.00072447,
+            "upstream_inference_prompt_cost": 0.00014402,
+            "upstream_inference_completions_cost": 0.00058045
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 818,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "postprocessing": {
+          "changed_fields": []
+        }
+      }
+    }
+  ],
+  "usage_reported_documents": 8,
+  "cost_reported_documents": 8,
+  "reported_cost_usd": 0.0137992,
+  "mean_cost_per_document_usd": 0.0017249
+}
